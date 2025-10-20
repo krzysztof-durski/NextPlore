@@ -2,7 +2,7 @@
 
 ## (LOGO and LICENCES HERE !!!!!!!)
 
-![NextPlore Logo](Logo/Logo%20V1.png)
+<img src="Documentation/Logo/Logo%20V1.png" alt="NextPlore Logo" width="100" height="100" />
 
 ## Project description
 
