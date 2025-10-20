@@ -2,6 +2,8 @@
 
 ## (LOGO and LICENCES HERE !!!!!!!)
 
+![NextPlore Logo](Logo/Logo%20V1.png)
+
 ## Project description
 
 NextPlore is an instant, nearby locations recommender for tourists. Save time on research and get tailored recommendations of cool places and activities nearby.
