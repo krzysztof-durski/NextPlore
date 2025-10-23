@@ -1,0 +1,6 @@
+PG_USER=your_username
+PG_PASSWORD=your_password
+PG_DATABASE=your_database_name
+PG_HOST=
+PG_PORT=
+PORT=

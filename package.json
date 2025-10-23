@@ -1,0 +1,25 @@
+{
+  "name": "nextplore",
+  "version": "1.0.0",
+  "description": "A smart way to explore city, and go on adventures ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krzysztof-durski/NextPlore.git"
+  },
+  "author": "Aditya, Kryz Durski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krzysztof-durski/NextPlore/issues"
+  },
+  "homepage": "https://github.com/krzysztof-durski/NextPlore#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "sequelize": "^6.37.3",
+    "dotenv": "^16.4.5"
+  }
+}
