@@ -4,7 +4,8 @@
   "description": "A smart way to explore city, and go on adventures ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "type": "module"
   },
   "repository": {
     "type": "git",
