@@ -11,11 +11,11 @@ const User = sequelize.define(
       autoIncrement: true,
     },
     fullname: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     username: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
     },
@@ -37,11 +37,20 @@ const User = sequelize.define(
       },
     },
     password: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: "Password cannot be empty",
+        },
+        len: {
+          args: [8, 255],
+          msg: "Password must be at least 8 characters",
+        },
+      },
     },
     phone_number: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(32),
       allowNull: true,
     },
     deleted_at: {
