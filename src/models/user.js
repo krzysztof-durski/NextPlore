@@ -2,66 +2,71 @@ import { DataTypes } from "sequelize";
 import sequelize from "../db/database.js";
 import bcrypt from "bcryptjs";
 
-const User = sequelize.define("user", {
-  user_id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  fullname: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: {
-        msg: "Please provide a valid email address",
-      },
-      notEmpty: {
-        msg: "Email cannot be empty",
-      },
-      len: {
-        args: [5, 255],
-        msg: "Email must be between 5 and 255 characters",
+const User = sequelize.define(
+  "user",
+  {
+    user_id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    fullname: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: {
+          msg: "Please provide a valid email address",
+        },
+        notEmpty: {
+          msg: "Email cannot be empty",
+        },
+        len: {
+          args: [5, 255],
+          msg: "Email must be between 5 and 255 characters",
+        },
       },
     },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    phone_number: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    is_verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
   },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  phone_number: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW,
-  },
-  deleted_at: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  is_verified: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
-  },
-});
+  {
+    timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+    paranoid: true,
+    deletedAt: "deleted_at",
+  }
+);
 
 // Instance method to hash password
 User.prototype.hashPassword = async function (password) {
