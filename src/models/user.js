@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/database.js";
+import bcrypt from "bcryptjs";
 
 const User = sequelize.define("user", {
   user_id: {
@@ -21,7 +22,6 @@ const User = sequelize.define("user", {
     allowNull: false,
     unique: true,
   },
-  //TODO: Add hashed password!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   password: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -49,6 +49,31 @@ const User = sequelize.define("user", {
     allowNull: false,
     defaultValue: false,
   },
+});
+
+// Instance method to hash password
+User.prototype.hashPassword = async function (password) {
+  const saltRounds = 12;
+  return await bcrypt.hash(password, saltRounds);
+};
+
+// Instance method to compare password
+User.prototype.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Hook to hash password before creating user
+User.beforeCreate(async (user) => {
+  if (user.password) {
+    user.password = await bcrypt.hash(user.password, 12);
+  }
+});
+
+// Hook to hash password before updating user (only if password is being updated)
+User.beforeUpdate(async (user) => {
+  if (user.changed("password")) {
+    user.password = await bcrypt.hash(user.password, 12);
+  }
 });
 
 export default User;
