@@ -14,6 +14,6 @@ With NextPlore you can explore the city your way and always have some suggestion
 
 ## Addition documentation
 
-## How to get help
+## How to get helpp
 
 ## Terms of use
