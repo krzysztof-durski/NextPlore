@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "./db/database.js";
+import sequelize from "../db/database.js";
 
 const Location = sequelize.define("location",{
     location_id:{
@@ -32,7 +32,7 @@ const Location = sequelize.define("location",{
         type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull:true,
     },
-    counttry_code:{
+    country_code:{
         type: DataTypes.STRING,
         allowNull:false,
     }
