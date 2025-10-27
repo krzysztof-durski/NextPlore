@@ -1,6 +1,6 @@
 import app from "./app.js";
-import dotenv from 'dotenv';
-import sequelize from "./src/models/db/database.js";
+import dotenv from "dotenv";
+import sequelize from "./src/db/database.js";
 import Location from "./src/models/location.js";
 dotenv.config();
 
