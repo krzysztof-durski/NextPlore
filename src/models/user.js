@@ -21,6 +21,18 @@ const User = sequelize.define("user", {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
+    validate: {
+      isEmail: {
+        msg: "Please provide a valid email address",
+      },
+      notEmpty: {
+        msg: "Email cannot be empty",
+      },
+      len: {
+        args: [5, 255],
+        msg: "Email must be between 5 and 255 characters",
+      },
+    },
   },
   password: {
     type: DataTypes.STRING,
