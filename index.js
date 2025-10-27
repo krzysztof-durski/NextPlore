@@ -2,6 +2,7 @@ import app from "./app.js";
 import dotenv from "dotenv";
 import sequelize from "./src/db/database.js";
 import Location from "./src/models/location.js";
+import User from "./src/models/user.js";
 dotenv.config();
 
 async function StartServer() {
@@ -9,7 +10,7 @@ async function StartServer() {
     await sequelize.authenticate();
     console.log("Database connected successfully.");
 
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: true });
     console.log("All models were synchronized successfully.");
 
     app.listen(process.env.PORT || 8000, () => {
