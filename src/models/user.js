@@ -15,9 +15,9 @@ const User = sequelize.define(
       allowNull: false,
     },
     username: {
+      // username is just a display name for the user (not unique)
       type: DataTypes.STRING(255),
       allowNull: false,
-      unique: true,
     },
     email: {
       type: DataTypes.STRING,
