@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import sequelize from "./src/db/database.js";
 import Location from "./src/models/location.js";
 import User from "./src/models/user.js";
+import Tag from "./src/models/tag.js";
+import "./src/models/association.js";
 dotenv.config();
 
 async function StartServer() {
