@@ -1,4 +1,4 @@
-import sequelize from "./db/database";
+import sequelize from "../db/database.js";
 import { DataTypes } from "sequelize";
 
 const Tag = sequelize.define("tag", {
