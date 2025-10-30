@@ -12,11 +12,11 @@ const Location = sequelize.define("location", {
     allowNull: false,
     unique: true,
   },
-  Name: {
+  name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  Address: {
+  address: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -24,14 +24,15 @@ const Location = sequelize.define("location", {
     type: DataTypes.GEOGRAPHY("POINT", 4326),
     allowNull: false,
   },
-  Description: {
+  description: {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  Links: {
+  links: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: true,
   },
+  //to be changed for country_id!!!!!!!!!!!!!!!!!!!!
   country_code: {
     type: DataTypes.STRING,
     allowNull: false,
