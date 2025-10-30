@@ -20,7 +20,7 @@ const User = sequelize.define(
       allowNull: false,
     },
     email: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
       validate: {
@@ -53,9 +53,13 @@ const User = sequelize.define(
       type: DataTypes.STRING(32),
       allowNull: true,
     },
-    users_country: {
-      type: DataTypes.STRING(255),
+    country_id: {
+      type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: "country",
+        key: "country_id",
+      },
     },
     deleted_at: {
       type: DataTypes.DATE,
