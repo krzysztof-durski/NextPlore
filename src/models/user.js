@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/database.js";
 import bcrypt from "bcryptjs";
+import Country from "./country.js";
 
 const User = sequelize.define(
   "user",
@@ -57,7 +58,7 @@ const User = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "country",
+        model: Country,
         key: "country_id",
       },
     },

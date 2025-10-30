@@ -13,7 +13,25 @@ async function StartServer() {
     await sequelize.authenticate();
     console.log("Database connected successfully.");
 
-    await sequelize.sync({ force: true });
+    // Sync models in correct dependency order
+    // Country must be synced first (no dependencies)
+    await Country.sync({ force: true });
+    console.log("Country model synchronized.");
+
+    // Tag can be synced next (no dependencies)
+    await Tag.sync({ force: true });
+    console.log("Tag model synchronized.");
+
+    // User depends on Country
+    await User.sync({ force: true });
+    console.log("User model synchronized.");
+
+    // Location can be synced (country_code is just a string, not FK)
+    await Location.sync({ force: true });
+    console.log("Location model synchronized.");
+
+    // Now sync association tables (through tables)
+    await sequelize.sync({ force: false });
     console.log("All models were synchronized successfully.");
 
     app.listen(process.env.PORT || 8000, () => {
