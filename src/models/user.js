@@ -53,6 +53,10 @@ const User = sequelize.define(
       type: DataTypes.STRING(32),
       allowNull: true,
     },
+    users_country: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     deleted_at: {
       type: DataTypes.DATE,
       allowNull: true,
