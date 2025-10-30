@@ -4,6 +4,7 @@ import sequelize from "./src/db/database.js";
 import Location from "./src/models/location.js";
 import User from "./src/models/user.js";
 import Tag from "./src/models/tag.js";
+import Country from "./src/models/country.js";
 import "./src/models/association.js";
 dotenv.config();
 
