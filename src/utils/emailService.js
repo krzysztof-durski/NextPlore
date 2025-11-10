@@ -92,4 +92,3 @@ export const verifyEmailConfig = async () => {
     return false;
   }
 };
-

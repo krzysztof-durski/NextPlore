@@ -54,6 +54,20 @@ const User = sequelize.define(
       type: DataTypes.STRING(32),
       allowNull: true,
     },
+    date_of_birth: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      validate: {
+        isDate: {
+          msg: "Please provide a valid date of birth",
+        },
+        isBeforeToday(value) {
+          if (value && new Date(value) > new Date()) {
+            throw new Error("Date of birth cannot be in the future");
+          }
+        },
+      },
+    },
     country_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
