@@ -99,4 +99,15 @@ const loginUser = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, userResponse, "User logged in successfully"));
 });
 
-export { registerUser, loginUser };
+const logoutUser = asynchandler(async (req, res) => {
+  // Clear any authentication cookies if they exist
+  // This is prepared for future cookie-based authentication
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+export { registerUser, loginUser, logoutUser };
