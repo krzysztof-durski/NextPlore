@@ -8,7 +8,7 @@ const Tag = sequelize.define("tag", {
     autoIncrement: true,
   },
   tag_name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
     unique: true,
   },
