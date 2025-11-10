@@ -8,16 +8,17 @@ const Country = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+      allowNull: false,
     },
     country_name: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      unique: true,
       validate: {
         notEmpty: {
           msg: "Country name cannot be empty",
         },
       },
+      unique: true,
     },
     country_code: {
       type: DataTypes.STRING(2),
@@ -33,12 +34,18 @@ const Country = sequelize.define(
         },
       },
     },
+    flag: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: "Country flag emoji",
+    },
   },
   {
-    tableName: "country",
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
+    deletedAt: "deleted_at",
   }
 );
 
