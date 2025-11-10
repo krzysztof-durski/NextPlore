@@ -76,6 +76,14 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: true,
     },
+    password_reset_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    password_reset_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
