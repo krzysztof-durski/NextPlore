@@ -70,7 +70,7 @@ const User = sequelize.define(
     },
     country_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: Country,
         key: "country_id",
