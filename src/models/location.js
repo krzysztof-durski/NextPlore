@@ -8,16 +8,16 @@ const Location = sequelize.define("location", {
     autoIncrement: true,
   },
   fsq_place_id: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
     unique: true,
   },
   name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
   address: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
   location: {
@@ -32,10 +32,14 @@ const Location = sequelize.define("location", {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: true,
   },
-  //to be changed for country_id!!!!!!!!!!!!!!!!!!!!
-  country_code: {
-    type: DataTypes.STRING,
+  // Foreign key to Country model - use country_id to get country_code from Country
+  country_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: "country",
+      key: "country_id",
+    },
   },
 });
 

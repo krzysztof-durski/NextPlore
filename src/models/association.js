@@ -14,3 +14,7 @@ Tag.belongsToMany(User, { through: "user_tag", foreignKey: "tagId" });
 // Location and Tag (Many-to-Many)
 Location.belongsToMany(Tag, { through: "place_tag", foreignKey: "locationId" });
 Tag.belongsToMany(Location, { through: "place_tag", foreignKey: "tagId" });
+
+// Location and Country (Many-to-One)
+Location.belongsTo(Country, { foreignKey: "country_id", as: "country" });
+Country.hasMany(Location, { foreignKey: "country_id" });
