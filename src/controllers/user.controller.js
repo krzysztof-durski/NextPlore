@@ -1,48 +1,87 @@
 import User from "../models/user.js";
+import Country from "../models/country.js";
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const registerUser = asynchandler(async (req, res) => {
-  const { fullname, username, email, password, phone_number, country_id } =
-    req.body;
+  const {
+    fullname,
+    username,
+    email,
+    date_of_birth,
+    country,
+    password,
+    repeat_password,
+  } = req.body;
 
-  // Check if all required fields are provided
-  if (!fullname || !username || !email || !password) {
-    throw new ApiError(400, "Please provide all required fields");
+  // Validate required fields
+  if (
+    !fullname ||
+    !username ||
+    !email ||
+    !date_of_birth ||
+    !country ||
+    !password ||
+    !repeat_password
+  ) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  // Validate password match
+  if (password !== repeat_password) {
+    throw new ApiError(400, "Passwords do not match");
   }
 
   // Check if user with email already exists
-  const existingUser = await User.findOne({
-    where: { email },
-  });
-
+  const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new ApiError(409, "User with this email already exists");
   }
 
-  // Create new user
+  // Validate country_id exists (country is selected from dropdown)
+  const countryId = parseInt(country, 10);
+  if (isNaN(countryId)) {
+    throw new ApiError(400, "Invalid country ID");
+  }
+
+  const countryRecord = await Country.findByPk(countryId);
+  if (!countryRecord) {
+    throw new ApiError(404, "Country not found");
+  }
+
+  // Calculate if user is adult (18 years or older)
+  const birthDate = new Date(date_of_birth);
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+
+  // Adjust age if birthday hasn't occurred this year yet
+  const isAdult =
+    age > 18 ||
+    (age === 18 && (monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0)));
+
+  // Create user
   const user = await User.create({
     fullname,
     username,
     email,
-    password,
-    phone_number: phone_number || null,
-    country_id: country_id || null,
+    date_of_birth,
+    country_id: countryId,
+    password, // Password will be hashed automatically by the beforeCreate hook
+    is_adult: isAdult,
   });
 
-  // Remove password from response
+  // Return success response (exclude password from response)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
     username: user.username,
     email: user.email,
-    phone_number: user.phone_number,
+    date_of_birth: user.date_of_birth,
     country_id: user.country_id,
-    is_verified: user.is_verified,
-    is_active: user.is_active,
     created_at: user.created_at,
-    updated_at: user.updated_at,
   };
 
   return res
@@ -50,64 +89,4 @@ const registerUser = asynchandler(async (req, res) => {
     .json(new ApiResponse(201, userResponse, "User registered successfully"));
 });
 
-const loginUser = asynchandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  // Check if email and password are provided
-  if (!email || !password) {
-    throw new ApiError(400, "Please provide email and password");
-  }
-
-  // Find user by email
-  const user = await User.findOne({
-    where: { email },
-  });
-
-  // Check if user exists
-  if (!user) {
-    throw new ApiError(401, "Invalid email or password");
-  }
-
-  // Check if user is active
-  if (!user.is_active) {
-    throw new ApiError(403, "Account is deactivated. Please contact support");
-  }
-
-  // Compare password
-  const isPasswordValid = await user.comparePassword(password);
-
-  if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid email or password");
-  }
-
-  // Remove password from response
-  const userResponse = {
-    user_id: user.user_id,
-    fullname: user.fullname,
-    username: user.username,
-    email: user.email,
-    phone_number: user.phone_number,
-    country_id: user.country_id,
-    is_verified: user.is_verified,
-    is_active: user.is_active,
-    created_at: user.created_at,
-    updated_at: user.updated_at,
-  };
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, userResponse, "User logged in successfully"));
-});
-
-const logoutUser = asynchandler(async (req, res) => {
-  // Clear any authentication cookies if they exist
-  // This is prepared for future cookie-based authentication
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "User logged out successfully"));
-});
-
-export { registerUser, loginUser, logoutUser };
+export { registerUser };
