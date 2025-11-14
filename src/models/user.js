@@ -90,6 +90,11 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: true,
     },
+    is_adult: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     password_reset_token: {
       type: DataTypes.STRING(255),
       allowNull: true,
