@@ -351,11 +351,15 @@ const resetPassword = asynchandler(async (req, res) => {
     throw new ApiError(400, "Invalid password reset code");
   }
 
-  // Update password and clear reset code
+  // Clear reset tokens immediately after successful validation to prevent reuse
   await user.update({
-    password: new_password, // Password will be hashed automatically by the beforeUpdate hook
     password_reset_token: null,
     password_reset_expires: null,
+  });
+
+  // Update password (tokens already cleared above)
+  await user.update({
+    password: new_password, // Password will be hashed automatically by the beforeUpdate hook
   });
 
   return res
