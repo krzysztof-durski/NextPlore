@@ -9,6 +9,7 @@ import {
   resendPasswordResetCode,
   changePassword,
   changeUsername,
+  changeCountry,
   getCurrentUser,
   logoutUser,
 } from "../controllers/user.controller.js";
@@ -35,6 +36,7 @@ router.post("/resend-password-reset-code", resendPasswordResetCode);
 router.get("/me", authenticate, getCurrentUser);
 router.post("/change-password", authenticate, changePassword);
 router.post("/change-username", authenticate, changeUsername);
+router.post("/change-country", authenticate, changeCountry);
 router.post("/logout", authenticate, logoutUser);
 
 export default router;

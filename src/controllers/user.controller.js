@@ -575,6 +575,60 @@ const changeUsername = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, userResponse, "Username changed successfully"));
 });
 
+const changeCountry = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  const { country_id } = req.body;
+
+  // Validate required fields
+  if (!country_id) {
+    throw new ApiError(400, "Country ID is required");
+  }
+
+  // Validate country_id is a valid integer
+  const newCountryId = parseInt(country_id, 10);
+  if (isNaN(newCountryId)) {
+    throw new ApiError(400, "Invalid country ID");
+  }
+
+  // Check if new country is different from current country
+  if (user.country_id === newCountryId) {
+    throw new ApiError(
+      400,
+      "New country must be different from the current country"
+    );
+  }
+
+  // Validate country exists
+  const countryRecord = await Country.findByPk(newCountryId);
+  if (!countryRecord) {
+    throw new ApiError(404, "Country not found");
+  }
+
+  // Update country_id
+  await user.update({
+    country_id: newCountryId,
+  });
+
+  // Return updated user data (exclude password)
+  const userResponse = {
+    user_id: user.user_id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    date_of_birth: user.date_of_birth,
+    country_id: user.country_id,
+    is_verified: user.is_verified,
+    is_adult: user.is_adult,
+    updated_at: user.updated_at,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userResponse, "Country changed successfully"));
+});
+
 const logoutUser = asynchandler(async (req, res) => {
   // For stateless JWT, logout is handled client-side by removing the token
   // This endpoint provides a clean API for logout and allows for future
@@ -595,6 +649,7 @@ export {
   resendPasswordResetCode,
   changePassword,
   changeUsername,
+  changeCountry,
   getCurrentUser,
   logoutUser,
 };
