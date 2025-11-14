@@ -12,14 +12,7 @@ const getAllCountries = asynchandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        countries,
-        "Countries retrieved successfully"
-      )
-    );
+    .json(new ApiResponse(200, countries, "Countries retrieved successfully"));
 });
 
 export { getAllCountries };
-

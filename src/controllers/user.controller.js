@@ -575,6 +575,63 @@ const changeUsername = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, userResponse, "Username changed successfully"));
 });
 
+const changeFullname = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  const { fullname, password } = req.body;
+
+  // Validate required fields
+  if (!fullname || !password) {
+    throw new ApiError(400, "Fullname and password are required");
+  }
+
+  // Validate fullname length (matching model constraint)
+  if (fullname.length > 255) {
+    throw new ApiError(400, "Fullname must be 255 characters or less");
+  }
+
+  if (fullname.trim().length === 0) {
+    throw new ApiError(400, "Fullname cannot be empty");
+  }
+
+  // Check if new fullname is different from current fullname
+  if (user.fullname === fullname.trim()) {
+    throw new ApiError(
+      400,
+      "New fullname must be different from the current fullname"
+    );
+  }
+
+  // Verify password
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid password");
+  }
+
+  // Update fullname
+  await user.update({
+    fullname: fullname.trim(),
+  });
+
+  // Return updated user data (exclude password)
+  const userResponse = {
+    user_id: user.user_id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    date_of_birth: user.date_of_birth,
+    country_id: user.country_id,
+    is_verified: user.is_verified,
+    is_adult: user.is_adult,
+    updated_at: user.updated_at,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userResponse, "Fullname changed successfully"));
+});
+
 const changeCountry = asynchandler(async (req, res) => {
   // Get user from JWT authentication middleware
   const user = req.user;
@@ -649,6 +706,7 @@ export {
   resendPasswordResetCode,
   changePassword,
   changeUsername,
+  changeFullname,
   changeCountry,
   getCurrentUser,
   logoutUser,
