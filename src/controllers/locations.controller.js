@@ -5,7 +5,7 @@ import {asynchandler} from "../utils/asynchandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import sequelize from "../db/database.js";
-
+import { Op } from "sequelize";
 
 const getnearbyLocations = asynchandler(async (req, res) => {
 
@@ -84,5 +84,17 @@ const getRecommendLocations = asynchandler(async (req, res) => {
 });
 
 
-export { getnearbyLocations, getRecommendLocations };
+ const getPlaceDetails = asynchandler(async (req, res) => {
+
+    const { id } = req.params;
+    const location = await Location.findByPk(id, {
+      include: Tag 
+    });
+    if (location) {
+      res.status(200).json(new ApiResponse(200, "Location details fetched successfully", location));
+    } else {
+      res.status(404).json(new ApiResponse(404, "Location not found", null));
+    }
+});
+export { getnearbyLocations, getRecommendLocations , getPlaceDetails};
 
