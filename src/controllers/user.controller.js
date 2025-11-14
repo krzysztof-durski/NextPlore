@@ -4,6 +4,7 @@ import Country from "../models/country.js";
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { generateToken } from "../utils/jwt.js";
 import {
   sendVerificationEmail,
   sendPasswordResetCode,
@@ -79,6 +80,9 @@ const registerUser = asynchandler(async (req, res) => {
     is_adult: isAdult,
   });
 
+  // Generate JWT token
+  const token = generateToken(user.user_id);
+
   // Return success response (exclude password from response)
   const userResponse = {
     user_id: user.user_id,
@@ -87,7 +91,10 @@ const registerUser = asynchandler(async (req, res) => {
     email: user.email,
     date_of_birth: user.date_of_birth,
     country_id: user.country_id,
+    is_verified: user.is_verified,
+    is_adult: user.is_adult,
     created_at: user.created_at,
+    token,
   };
 
   return res
@@ -120,6 +127,9 @@ const loginUser = asynchandler(async (req, res) => {
     throw new ApiError(401, "Invalid email or password");
   }
 
+  // Generate JWT token
+  const token = generateToken(user.user_id);
+
   // Return user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
@@ -131,6 +141,7 @@ const loginUser = asynchandler(async (req, res) => {
     is_verified: user.is_verified,
     is_adult: user.is_adult,
     created_at: user.created_at,
+    token,
   };
 
   return res
@@ -240,15 +251,25 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     verification_code_expires: null,
   });
 
+  // Generate JWT token to automatically log user in after verification
+  const token = generateToken(user.user_id);
+
+  // Return user data with token (exclude password)
+  const userResponse = {
+    user_id: user.user_id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    date_of_birth: user.date_of_birth,
+    country_id: user.country_id,
+    is_verified: true,
+    is_adult: user.is_adult,
+    token,
+  };
+
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { email: user.email, is_verified: true },
-        "Email verified successfully"
-      )
-    );
+    .json(new ApiResponse(200, userResponse, "Email verified successfully"));
 });
 
 const requestPasswordReset = asynchandler(async (req, res) => {
@@ -362,10 +383,15 @@ const resetPassword = asynchandler(async (req, res) => {
     password: new_password, // Password will be hashed automatically by the beforeUpdate hook
   });
 
+  // Return success message without token - user needs to login manually
   return res
     .status(200)
     .json(
-      new ApiResponse(200, { email: user.email }, "Password reset successfully")
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Password reset successfully. Please login with your new password."
+      )
     );
 });
 
@@ -419,6 +445,79 @@ const resendPasswordResetCode = asynchandler(async (req, res) => {
     );
 });
 
+const changePassword = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  const { old_password, new_password, repeat_new_password } = req.body;
+
+  // Validate required fields
+  if (!old_password || !new_password || !repeat_new_password) {
+    throw new ApiError(
+      400,
+      "Old password, new password, and repeat new password are required"
+    );
+  }
+
+  // Validate password match
+  if (new_password !== repeat_new_password) {
+    throw new ApiError(400, "New passwords do not match");
+  }
+
+  // Validate that new password is different from old password
+  if (old_password === new_password) {
+    throw new ApiError(
+      400,
+      "New password must be different from the old password"
+    );
+  }
+
+  // Verify old password
+  const isOldPasswordValid = await user.comparePassword(old_password);
+  if (!isOldPasswordValid) {
+    throw new ApiError(401, "Invalid old password");
+  }
+
+  // Update password (password will be hashed automatically by the beforeUpdate hook)
+  await user.update({
+    password: new_password,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Password changed successfully"
+      )
+    );
+});
+
+const getCurrentUser = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  // Return user data (exclude password)
+  const userResponse = {
+    user_id: user.user_id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    date_of_birth: user.date_of_birth,
+    country_id: user.country_id,
+    phone_number: user.phone_number,
+    is_verified: user.is_verified,
+    is_adult: user.is_adult,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userResponse, "User retrieved successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -427,4 +526,6 @@ export {
   requestPasswordReset,
   resetPassword,
   resendPasswordResetCode,
+  changePassword,
+  getCurrentUser,
 };
