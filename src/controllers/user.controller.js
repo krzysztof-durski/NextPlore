@@ -324,7 +324,16 @@ const requestPasswordReset = asynchandler(async (req, res) => {
 
   // Check if user is active
   if (!user.is_active) {
-    throw new ApiError(403, "Account is deactivated. Please contact support.");
+    // For security, don't reveal that account exists but is deactivated
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { email },
+          "If an account with this email exists, a password reset code has been sent"
+        )
+      );
   }
 
   // Generate 6-digit reset code
@@ -393,8 +402,33 @@ const resetPassword = asynchandler(async (req, res) => {
     throw new ApiError(400, "Password reset code has expired");
   }
 
-  // Verify the code
-  if (user.password_reset_token !== code) {
+  // Verify the code using timing-safe comparison
+  if (!user.password_reset_token || !code) {
+    throw new ApiError(400, "Invalid password reset code");
+  }
+
+  const storedTokenBuffer = Buffer.from(user.password_reset_token, "utf8");
+  const providedCodeBuffer = Buffer.from(code, "utf8");
+
+  // Ensure both buffers are the same length to avoid leaking length information
+  const maxLength = Math.max(
+    storedTokenBuffer.length,
+    providedCodeBuffer.length
+  );
+  const zeroedBuffer = Buffer.alloc(maxLength, 0);
+
+  // Pad both buffers to the same length for timing-safe comparison
+  const paddedStoredToken = Buffer.concat([
+    storedTokenBuffer,
+    zeroedBuffer.slice(storedTokenBuffer.length),
+  ]);
+  const paddedProvidedCode = Buffer.concat([
+    providedCodeBuffer,
+    zeroedBuffer.slice(providedCodeBuffer.length),
+  ]);
+
+  // Perform timing-safe comparison
+  if (!crypto.timingSafeEqual(paddedStoredToken, paddedProvidedCode)) {
     throw new ApiError(400, "Invalid password reset code");
   }
 
@@ -443,7 +477,7 @@ const resendPasswordResetCode = asynchandler(async (req, res) => {
   }
 
   // Generate new 6-digit reset code
-  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const resetCode = crypto.randomInt(100000, 1000000).toString();
 
   // Set expiration time (10 minutes from now)
   const resetCodeExpires = new Date();
@@ -928,15 +962,16 @@ const resendAccountDeletionCode = asynchandler(async (req, res) => {
     );
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { email: user.email },
-        "Account deletion verification code resent successfully"
-      )
-    );
+  return res.status(200);
+  // Password is valid - clear sensitive data and proceed with account deletion
+  await user.update({
+    is_active: false,
+    refresh_token: null,
+    account_deletion_verified: false,
+  });
+
+  // soft delete
+  await user.destroy();
 });
 
 const confirmAccountDeletion = asynchandler(async (req, res) => {

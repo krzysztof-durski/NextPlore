@@ -56,31 +56,3 @@ export const authenticate = asynchandler(async (req, res, next) => {
     throw new ApiError(401, "Invalid or expired token");
   }
 });
-
-// Optional middleware - doesn't throw error if no token, but attaches user if valid token exists
-export const optionalAuthenticate = asynchandler(async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next();
-  }
-
-  const token = authHeader.substring(7);
-
-  if (!token) {
-    return next();
-  }
-
-  try {
-    const decoded = verifyAccessToken(token);
-    const user = await User.findByPk(decoded.userId);
-
-    if (user && user.is_active) {
-      req.user = user;
-    }
-  } catch (error) {
-    // Silently fail for optional authentication
-  }
-
-  next();
-});
