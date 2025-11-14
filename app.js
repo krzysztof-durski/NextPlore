@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import userRoutes from "./src/routes/user.route.js";
 import countryRoutes from "./src/routes/country.route.js";
@@ -8,7 +9,16 @@ dotenv.config();
 
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
