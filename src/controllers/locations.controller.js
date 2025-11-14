@@ -48,8 +48,8 @@ const getRecommendLocations = asynchandler(async (req, res) => {
     if (!tags || !Array.isArray(tags) || tags.length === 0) {
         throw new ApiError(400, "At least one tag is required for recommendations");
     }
-    const tagNames = tags
-    const tagCount = tagNames.length
+    const tagNames = tags;
+    const tagCount = tagNames.length;
     const latitude = parseFloat(userLocation.latitude);
     const longitude = parseFloat(userLocation.longitude);
     const radiusKm = parseFloat(radius || 5);
