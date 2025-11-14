@@ -518,6 +518,63 @@ const getCurrentUser = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, userResponse, "User retrieved successfully"));
 });
 
+const changeUsername = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  const { new_username, password } = req.body;
+
+  // Validate required fields
+  if (!new_username || !password) {
+    throw new ApiError(400, "New username and password are required");
+  }
+
+  // Validate username length (matching model constraint)
+  if (new_username.length > 32) {
+    throw new ApiError(400, "Username must be 32 characters or less");
+  }
+
+  if (new_username.trim().length === 0) {
+    throw new ApiError(400, "Username cannot be empty");
+  }
+
+  // Check if new username is different from current username
+  if (user.username === new_username.trim()) {
+    throw new ApiError(
+      400,
+      "New username must be different from the current username"
+    );
+  }
+
+  // Verify password
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid password");
+  }
+
+  // Update username
+  await user.update({
+    username: new_username.trim(),
+  });
+
+  // Return updated user data (exclude password)
+  const userResponse = {
+    user_id: user.user_id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    date_of_birth: user.date_of_birth,
+    country_id: user.country_id,
+    is_verified: user.is_verified,
+    is_adult: user.is_adult,
+    updated_at: user.updated_at,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userResponse, "Username changed successfully"));
+});
+
 const logoutUser = asynchandler(async (req, res) => {
   // For stateless JWT, logout is handled client-side by removing the token
   // This endpoint provides a clean API for logout and allows for future
@@ -537,6 +594,7 @@ export {
   resetPassword,
   resendPasswordResetCode,
   changePassword,
+  changeUsername,
   getCurrentUser,
   logoutUser,
 };

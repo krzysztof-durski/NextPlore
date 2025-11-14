@@ -8,6 +8,7 @@ import {
   resetPassword,
   resendPasswordResetCode,
   changePassword,
+  changeUsername,
   getCurrentUser,
   logoutUser,
 } from "../controllers/user.controller.js";
@@ -33,6 +34,7 @@ router.post("/resend-password-reset-code", resendPasswordResetCode);
 // Protected routes (require JWT authentication)
 router.get("/me", authenticate, getCurrentUser);
 router.post("/change-password", authenticate, changePassword);
+router.post("/change-username", authenticate, changeUsername);
 router.post("/logout", authenticate, logoutUser);
 
 export default router;
