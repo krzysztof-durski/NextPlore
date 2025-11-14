@@ -13,6 +13,10 @@ import {
   changeCountry,
   getCurrentUser,
   logoutUser,
+  sendAccountDeletionVerificationCode,
+  verifyAccountDeletionCode,
+  resendAccountDeletionCode,
+  confirmAccountDeletion,
 } from "../controllers/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
@@ -40,5 +44,23 @@ router.post("/change-username", authenticate, changeUsername);
 router.post("/change-fullname", authenticate, changeFullname);
 router.post("/change-country", authenticate, changeCountry);
 router.post("/logout", authenticate, logoutUser);
+
+// Account deletion routes (require JWT authentication)
+router.post(
+  "/delete-account/send-code",
+  authenticate,
+  sendAccountDeletionVerificationCode
+);
+router.post(
+  "/delete-account/verify-code",
+  authenticate,
+  verifyAccountDeletionCode
+);
+router.post(
+  "/delete-account/resend-code",
+  authenticate,
+  resendAccountDeletionCode
+);
+router.post("/delete-account/confirm", authenticate, confirmAccountDeletion);
 
 export default router;

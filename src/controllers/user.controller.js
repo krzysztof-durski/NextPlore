@@ -8,6 +8,7 @@ import { generateToken } from "../utils/jwt.js";
 import {
   sendVerificationEmail,
   sendPasswordResetCode,
+  sendAccountDeletionCode,
 } from "../utils/emailService.js";
 
 const registerUser = asynchandler(async (req, res) => {
@@ -696,6 +697,198 @@ const logoutUser = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Logged out successfully"));
 });
 
+// Account Deletion Controllers
+
+const sendAccountDeletionVerificationCode = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  // Check if user is active
+  if (!user.is_active) {
+    throw new ApiError(403, "Account is deactivated. Please contact support.");
+  }
+
+  // Generate 6-digit deletion verification code
+  const deletionCode = crypto.randomInt(100000, 1000000).toString();
+
+  // Set expiration time (10 minutes from now)
+  const deletionCodeExpires = new Date();
+  deletionCodeExpires.setMinutes(deletionCodeExpires.getMinutes() + 10);
+
+  // Save deletion code and expiration to user
+  // Reset verification flag when requesting a new code
+  await user.update({
+    account_deletion_code: deletionCode,
+    account_deletion_code_expires: deletionCodeExpires,
+    account_deletion_verified: false,
+  });
+
+  // Send account deletion verification email
+  try {
+    await sendAccountDeletionCode(user.email, deletionCode);
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Failed to send account deletion verification email"
+    );
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Account deletion verification email sent successfully"
+      )
+    );
+});
+
+const verifyAccountDeletionCode = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  const { code } = req.body;
+
+  // Validate required fields
+  if (!code) {
+    throw new ApiError(400, "Verification code is required");
+  }
+
+  // Check if deletion code exists
+  if (!user.account_deletion_code) {
+    throw new ApiError(
+      400,
+      "No account deletion verification code found. Please request a new one."
+    );
+  }
+
+  // Check if deletion code has expired
+  if (new Date() > new Date(user.account_deletion_code_expires)) {
+    throw new ApiError(
+      400,
+      "Account deletion verification code has expired. Please request a new one."
+    );
+  }
+
+  // Verify the code using timing-safe comparison
+  if (
+    !crypto.timingSafeEqual(
+      Buffer.from(user.account_deletion_code),
+      Buffer.from(code)
+    )
+  ) {
+    throw new ApiError(400, "Invalid account deletion verification code");
+  }
+
+  // Code is valid - mark as verified and clear the code
+  // This allows user to proceed to password confirmation
+  await user.update({
+    account_deletion_code: null,
+    account_deletion_code_expires: null,
+    account_deletion_verified: true,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { verified: true },
+        "Account deletion verification code verified successfully. Please proceed to password confirmation."
+      )
+    );
+});
+
+const resendAccountDeletionCode = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  // Check if user is active
+  if (!user.is_active) {
+    throw new ApiError(403, "Account is deactivated. Please contact support.");
+  }
+
+  // Generate new 6-digit deletion verification code
+  const deletionCode = crypto.randomInt(100000, 1000000).toString();
+
+  // Set expiration time (10 minutes from now)
+  const deletionCodeExpires = new Date();
+  deletionCodeExpires.setMinutes(deletionCodeExpires.getMinutes() + 10);
+
+  // Save deletion code and expiration to user
+  // Reset verification flag when requesting a new code
+  await user.update({
+    account_deletion_code: deletionCode,
+    account_deletion_code_expires: deletionCodeExpires,
+    account_deletion_verified: false,
+  });
+
+  // Send account deletion verification email
+  try {
+    await sendAccountDeletionCode(user.email, deletionCode);
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Failed to send account deletion verification email"
+    );
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Account deletion verification code resent successfully"
+      )
+    );
+});
+
+const confirmAccountDeletion = asynchandler(async (req, res) => {
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  const { password } = req.body;
+
+  // Validate required fields
+  if (!password) {
+    throw new ApiError(400, "Password is required to confirm account deletion");
+  }
+
+  // Check if email verification step was completed
+  if (!user.account_deletion_verified) {
+    throw new ApiError(
+      400,
+      "Please verify your email first by completing the verification code step"
+    );
+  }
+
+  // Verify password
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid password");
+  }
+
+  // Password is valid - proceed with account deletion
+  await user.update({
+    is_active: false,
+  });
+
+  // soft delete
+  await user.destroy();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { deleted: true },
+        "Your account has been deleted successfully. All your data will be permanently deleted within 14 business days."
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -710,4 +903,8 @@ export {
   changeCountry,
   getCurrentUser,
   logoutUser,
+  sendAccountDeletionVerificationCode,
+  verifyAccountDeletionCode,
+  resendAccountDeletionCode,
+  confirmAccountDeletion,
 };

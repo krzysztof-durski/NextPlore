@@ -107,6 +107,19 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    account_deletion_code: {
+      type: DataTypes.STRING(6),
+      allowNull: true,
+    },
+    account_deletion_code_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    account_deletion_verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     timestamps: true,
