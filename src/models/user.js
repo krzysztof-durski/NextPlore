@@ -103,6 +103,14 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    verification_code: {
+      type: DataTypes.STRING(6),
+      allowNull: true,
+    },
+    verification_code_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

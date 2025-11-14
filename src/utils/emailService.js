@@ -79,6 +79,70 @@ export const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
 };
 
 /**
+ * Send email verification code
+ * @param {string} email - Recipient email address
+ * @param {string} verificationCode - 6-digit verification code
+ * @returns {Promise} - Promise that resolves when email is sent
+ */
+export const sendVerificationEmail = async (email, verificationCode) => {
+  const mailOptions = {
+    from: `"NextPlore" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Email Verification - NextPlore",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Email Verification</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background-color: #f4f4f4; padding: 20px; border-radius: 5px;">
+            <h2 style="color: #333; margin-top: 0;">Email Verification</h2>
+            <p>Hello,</p>
+            <p>Thank you for registering with NextPlore. Please use the following code to verify your email address:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <div style="background-color: #007bff; color: #ffffff; padding: 15px 30px; border-radius: 5px; display: inline-block; font-size: 24px; font-weight: bold; letter-spacing: 5px;">
+                ${verificationCode}
+              </div>
+            </div>
+            <p><strong>This code will expire in 10 minutes.</strong></p>
+            <p>If you did not register for a NextPlore account, please ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">This is an automated message, please do not reply to this email.</p>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Email Verification - NextPlore
+      
+      Hello,
+      
+      Thank you for registering with NextPlore. Please use the following code to verify your email address:
+      
+      ${verificationCode}
+      
+      This code will expire in 10 minutes.
+      
+      If you did not register for a NextPlore account, please ignore this email.
+      
+      This is an automated message, please do not reply to this email.
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Verification email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send verification email");
+  }
+};
+
+/**
  * Verify email transporter configuration
  * @returns {Promise<boolean>} - Returns true if configuration is valid
  */
