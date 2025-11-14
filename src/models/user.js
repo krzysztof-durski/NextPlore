@@ -50,10 +50,6 @@ const User = sequelize.define(
         },
       },
     },
-    phone_number: {
-      type: DataTypes.STRING(32),
-      allowNull: true,
-    },
     date_of_birth: {
       type: DataTypes.DATEONLY,
       allowNull: false,
