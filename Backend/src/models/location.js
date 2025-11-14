@@ -32,6 +32,14 @@ const Location = sequelize.define("location", {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: true,
   },
+  icon_prefix: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  icon_suffix: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
   // Foreign key to Country model - use country_id to get country_code from Country
   country_id: {
     type: DataTypes.INTEGER,
