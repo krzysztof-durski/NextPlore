@@ -9,7 +9,7 @@ import sequelize from "../db/database.js";
 
 const getnearbyLocations = asynchandler(async (req, res) => {
 
-        const { latStr, lonStr } = req.query;
+        const { lat, lon } = req.query;
 
         const radiusKm = parseFloat(req.query.radius || 2); 
 
@@ -17,8 +17,8 @@ const getnearbyLocations = asynchandler(async (req, res) => {
             throw new ApiError(400, "Latitude and Longitude are required");
         }
 
-        const latitude = parseFloat(latStr);
-        const longitude = parseFloat(lonStr);
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lon);
 
         const Point = sequelize.fn('ST_MakePoint', longitude, latitude);
     
@@ -39,8 +39,50 @@ const getnearbyLocations = asynchandler(async (req, res) => {
         res.status(200).json(new ApiResponse(200, "Nearby locations fetched successfully", locations));
 });
 
+const getRecommendLocations = asynchandler(async (req, res) => {
+    const { tags, radius, userLocation } = req.body;
+
+    if (!userLocation || !userLocation.latitude || !userLocation.longitude) {
+        throw new ApiError(400, "User location with latitude and longitude is required");
+    }
+    if (!tags || !Array.isArray(tags) || tags.length === 0) {
+        throw new ApiError(400, "At least one tag is required for recommendations");
+    }
+    tagNames = tags
+    tagCount = tagNames.length
+    const latitude = parseFloat(userLocation.latitude);
+    const longitude = parseFloat(userLocation.longitude);
+    const radiusKm = parseFloat(radius || 5);
+
+    const Point = sequelize.fn('ST_MakePoint', longitude, latitude);
+    const userPoint = sequelize.fn('ST_SetSRID', Point, 4326);
+    const userGeography = sequelize.cast(userPoint, 'GEOGRAPHY');
 
 
+    const locations = await Location.findAll({
+      attributes: ['location_id', 'fsq_place_id', 'name', 'address', 'location'],
+      include: [{
+        model: Tag,
+        where: { name: { [Op.in]: tagNames } },
+        attributes: [],
+        through: { attributes: [] }
+      }],
+      where:sequelize.where(
+        sequelize.fn('ST_DWithin', 
+            sequelize.col('location'), 
+            userGeography,
+            radiusKm * 1000 // convert km to meters
+        ),
+        true
+    ),
+      group: ['location.location_id'],
+      having: sequelize.literal(`COUNT(DISTINCT "tags"."tag_id") = ${tagCount}`)
+    });
 
-export { getnearbyLocations };
+    res.status(200).json(new ApiResponse(200, "Recommended locations fetched successfully", locations));
+    
+});
+
+
+export { getnearbyLocations, getRecommendLocations };
 
