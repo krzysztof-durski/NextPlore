@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import User from "../models/user.js";
 import Country from "../models/country.js";
 import { asynchandler } from "../utils/asynchandler.js";
@@ -56,6 +57,7 @@ const registerUser = asynchandler(async (req, res) => {
 
   // Calculate if user is adult (18 years or older)
   const birthDate = new Date(date_of_birth);
+
   const today = new Date();
   const age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -156,9 +158,7 @@ const sendVerificationEmailCode = asynchandler(async (req, res) => {
   }
 
   // Generate 6-digit verification code
-  const verificationCode = Math.floor(
-    100000 + Math.random() * 900000
-  ).toString();
+  const verificationCode = crypto.randomInt(100000, 1000000).toString();
 
   // Set expiration time (10 minutes from now)
   const verificationCodeExpires = new Date();
@@ -224,7 +224,12 @@ const verifyEmailCode = asynchandler(async (req, res) => {
   }
 
   // Verify the code
-  if (user.verification_code !== code) {
+  if (
+    !crypto.timingSafeEqual(
+      Buffer.from(user.verification_code),
+      Buffer.from(code)
+    )
+  ) {
     throw new ApiError(400, "Invalid verification code");
   }
 
@@ -276,7 +281,7 @@ const requestPasswordReset = asynchandler(async (req, res) => {
   }
 
   // Generate 6-digit reset code
-  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const resetCode = crypto.randomInt(100000, 1000000).toString();
 
   // Set expiration time (10 minutes from now)
   const resetCodeExpires = new Date();
@@ -338,10 +343,7 @@ const resetPassword = asynchandler(async (req, res) => {
 
   // Check if reset code has expired
   if (new Date() > new Date(user.password_reset_expires)) {
-    throw new ApiError(
-      400,
-      "Password reset code has expired. Please request a new one."
-    );
+    throw new ApiError(400, "Password reset code has expired");
   }
 
   // Verify the code
