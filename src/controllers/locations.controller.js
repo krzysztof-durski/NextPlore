@@ -13,7 +13,7 @@ const getnearbyLocations = asynchandler(async (req, res) => {
 
         const radiusKm = parseFloat(req.query.radius || 2); 
 
-        if (!latitude || !longitude) {
+        if (!lat || !lon) {
             throw new ApiError(400, "Latitude and Longitude are required");
         }
 
@@ -48,8 +48,8 @@ const getRecommendLocations = asynchandler(async (req, res) => {
     if (!tags || !Array.isArray(tags) || tags.length === 0) {
         throw new ApiError(400, "At least one tag is required for recommendations");
     }
-    tagNames = tags
-    tagCount = tagNames.length
+    const tagNames = tags
+    const tagCount = tagNames.length
     const latitude = parseFloat(userLocation.latitude);
     const longitude = parseFloat(userLocation.longitude);
     const radiusKm = parseFloat(radius || 5);
@@ -93,7 +93,7 @@ const getRecommendLocations = asynchandler(async (req, res) => {
     if (location) {
       res.status(200).json(new ApiResponse(200, "Location details fetched successfully", location));
     } else {
-      res.status(404).json(new ApiResponse(404, "Location not found", null));
+      throw new ApiError(404, "Location not found");
     }
 });
 export { getnearbyLocations, getRecommendLocations , getPlaceDetails};
