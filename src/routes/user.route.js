@@ -9,6 +9,7 @@ import {
   resendPasswordResetCode,
   changePassword,
   getCurrentUser,
+  logoutUser,
 } from "../controllers/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
@@ -32,5 +33,6 @@ router.post("/resend-password-reset-code", resendPasswordResetCode);
 // Protected routes (require JWT authentication)
 router.get("/me", authenticate, getCurrentUser);
 router.post("/change-password", authenticate, changePassword);
+router.post("/logout", authenticate, logoutUser);
 
 export default router;

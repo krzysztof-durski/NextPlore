@@ -518,6 +518,16 @@ const getCurrentUser = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, userResponse, "User retrieved successfully"));
 });
 
+const logoutUser = asynchandler(async (req, res) => {
+  // For stateless JWT, logout is handled client-side by removing the token
+  // This endpoint provides a clean API for logout and allows for future
+  // server-side token invalidation if needed (e.g., token blacklist)
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Logged out successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -528,4 +538,5 @@ export {
   resendPasswordResetCode,
   changePassword,
   getCurrentUser,
+  logoutUser,
 };

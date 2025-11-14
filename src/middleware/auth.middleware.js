@@ -32,7 +32,10 @@ export const authenticate = asynchandler(async (req, res, next) => {
 
     // Check if user is active
     if (!user.is_active) {
-      throw new ApiError(403, "Account is deactivated. Please contact support.");
+      throw new ApiError(
+        403,
+        "Account is deactivated. Please contact support."
+      );
     }
 
     // Attach user to request object
@@ -73,4 +76,3 @@ export const optionalAuthenticate = asynchandler(async (req, res, next) => {
 
   next();
 });
-
