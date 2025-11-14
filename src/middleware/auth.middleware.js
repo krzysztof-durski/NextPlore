@@ -1,6 +1,6 @@
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/apiError.js";
-import { verifyToken } from "../utils/jwt.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 import User from "../models/user.js";
 
 // Middleware to authenticate user using JWT token
@@ -20,8 +20,8 @@ export const authenticate = asynchandler(async (req, res, next) => {
   }
 
   try {
-    // Verify token
-    const decoded = verifyToken(token);
+    // Verify access token
+    const decoded = verifyAccessToken(token);
 
     // Find user by userId from token
     const user = await User.findByPk(decoded.userId);
@@ -35,6 +35,14 @@ export const authenticate = asynchandler(async (req, res, next) => {
       throw new ApiError(
         403,
         "Account is deactivated. Please contact support."
+      );
+    }
+
+    // Check if user email is verified
+    if (!user.is_verified) {
+      throw new ApiError(
+        403,
+        "Email verification required. Please verify your email to access this resource."
       );
     }
 
@@ -64,7 +72,7 @@ export const optionalAuthenticate = asynchandler(async (req, res, next) => {
   }
 
   try {
-    const decoded = verifyToken(token);
+    const decoded = verifyAccessToken(token);
     const user = await User.findByPk(decoded.userId);
 
     if (user && user.is_active) {

@@ -4,7 +4,11 @@ import Country from "../models/country.js";
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { generateToken } from "../utils/jwt.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utils/jwt.js";
 import {
   sendVerificationEmail,
   sendPasswordResetCode,
@@ -81,10 +85,8 @@ const registerUser = asynchandler(async (req, res) => {
     is_adult: isAdult,
   });
 
-  // Generate JWT token
-  const token = generateToken(user.user_id);
-
   // Return success response (exclude password from response)
+  // Note!!!: Tokens are NOT generated here - they will be generated after email verification
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -95,12 +97,17 @@ const registerUser = asynchandler(async (req, res) => {
     is_verified: user.is_verified,
     is_adult: user.is_adult,
     created_at: user.created_at,
-    token,
   };
 
   return res
     .status(201)
-    .json(new ApiResponse(201, userResponse, "User registered successfully"));
+    .json(
+      new ApiResponse(
+        201,
+        userResponse,
+        "User registered successfully. Please verify your email to continue."
+      )
+    );
 });
 
 const loginUser = asynchandler(async (req, res) => {
@@ -128,8 +135,20 @@ const loginUser = asynchandler(async (req, res) => {
     throw new ApiError(401, "Invalid email or password");
   }
 
-  // Generate JWT token
-  const token = generateToken(user.user_id);
+  // Check if user email is verified
+  if (!user.is_verified) {
+    throw new ApiError(
+      403,
+      "Email verification required. Please verify your email before logging in."
+    );
+  }
+
+  // Generate JWT access and refresh tokens (only for verified users)
+  const accessToken = generateAccessToken(user.user_id);
+  const refreshToken = generateRefreshToken(user.user_id);
+
+  // Store refresh token in database
+  await user.update({ refresh_token: refreshToken });
 
   // Return user data (exclude password)
   const userResponse = {
@@ -142,7 +161,8 @@ const loginUser = asynchandler(async (req, res) => {
     is_verified: user.is_verified,
     is_adult: user.is_adult,
     created_at: user.created_at,
-    token,
+    accessToken,
+    refreshToken,
   };
 
   return res
@@ -252,10 +272,14 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     verification_code_expires: null,
   });
 
-  // Generate JWT token to automatically log user in after verification
-  const token = generateToken(user.user_id);
+  // Generate JWT access and refresh tokens to automatically log user in after verification
+  const accessToken = generateAccessToken(user.user_id);
+  const refreshToken = generateRefreshToken(user.user_id);
 
-  // Return user data with token (exclude password)
+  // Store refresh token in database
+  await user.update({ refresh_token: refreshToken });
+
+  // Return user data with tokens (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -265,7 +289,8 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     country_id: user.country_id,
     is_verified: true,
     is_adult: user.is_adult,
-    token,
+    accessToken,
+    refreshToken,
   };
 
   return res
@@ -374,9 +399,11 @@ const resetPassword = asynchandler(async (req, res) => {
   }
 
   // Clear reset tokens immediately after successful validation to prevent reuse
+  // Also clear refresh token for security (user needs to login again)
   await user.update({
     password_reset_token: null,
     password_reset_expires: null,
+    refresh_token: null,
   });
 
   // Update password (tokens already cleared above)
@@ -688,13 +715,80 @@ const changeCountry = asynchandler(async (req, res) => {
 });
 
 const logoutUser = asynchandler(async (req, res) => {
-  // For stateless JWT, logout is handled client-side by removing the token
-  // This endpoint provides a clean API for logout and allows for future
-  // server-side token invalidation if needed (e.g., token blacklist)
+  // Get user from JWT authentication middleware
+  const user = req.user;
+
+  // Clear refresh token from database
+  await user.update({ refresh_token: null });
 
   return res
     .status(200)
     .json(new ApiResponse(200, null, "Logged out successfully"));
+});
+
+const refreshToken = asynchandler(async (req, res) => {
+  const { refreshToken } = req.body;
+
+  // Validate refresh token is provided
+  if (!refreshToken) {
+    throw new ApiError(400, "Refresh token is required");
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Find user by userId from token
+    const user = await User.findByPk(decoded.userId);
+    if (!user) {
+      throw new ApiError(401, "User not found");
+    }
+
+    // Check if user is active
+    if (!user.is_active) {
+      throw new ApiError(
+        403,
+        "Account is deactivated. Please contact support."
+      );
+    }
+
+    // Check if user email is verified
+    if (!user.is_verified) {
+      throw new ApiError(
+        403,
+        "Email verification required. Please verify your email to continue."
+      );
+    }
+
+    // Verify that the refresh token matches the one stored in database
+    if (user.refresh_token !== refreshToken) {
+      throw new ApiError(401, "Invalid refresh token");
+    }
+
+    // Generate new access and refresh tokens
+    const newAccessToken = generateAccessToken(user.user_id);
+    const newRefreshToken = generateRefreshToken(user.user_id);
+
+    // Update refresh token in database
+    await user.update({ refresh_token: newRefreshToken });
+
+    // Return new tokens
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        },
+        "Tokens refreshed successfully"
+      )
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
 });
 
 // Account Deletion Controllers
@@ -903,6 +997,7 @@ export {
   changeCountry,
   getCurrentUser,
   logoutUser,
+  refreshToken,
   sendAccountDeletionVerificationCode,
   verifyAccountDeletionCode,
   resendAccountDeletionCode,

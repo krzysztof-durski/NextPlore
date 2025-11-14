@@ -120,6 +120,10 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    refresh_token: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

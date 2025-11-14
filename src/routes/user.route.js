@@ -13,6 +13,7 @@ import {
   changeCountry,
   getCurrentUser,
   logoutUser,
+  refreshToken,
   sendAccountDeletionVerificationCode,
   verifyAccountDeletionCode,
   resendAccountDeletionCode,
@@ -27,6 +28,9 @@ router.post("/register", registerUser);
 
 // User login
 router.post("/login", loginUser);
+
+// Refresh token (no auth required - uses refresh token)
+router.post("/refresh-token", refreshToken);
 
 // Email verification (no auth required - user may not be logged in)
 router.post("/send-verification-code", sendVerificationEmailCode);
