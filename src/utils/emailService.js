@@ -143,6 +143,70 @@ export const sendVerificationEmail = async (email, verificationCode) => {
 };
 
 /**
+ * Send password reset code email
+ * @param {string} email - Recipient email address
+ * @param {string} resetCode - 6-digit password reset code
+ * @returns {Promise} - Promise that resolves when email is sent
+ */
+export const sendPasswordResetCode = async (email, resetCode) => {
+  const mailOptions = {
+    from: `"NextPlore" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Password Reset Code - NextPlore",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Reset</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background-color: #f4f4f4; padding: 20px; border-radius: 5px;">
+            <h2 style="color: #333; margin-top: 0;">Password Reset Request</h2>
+            <p>Hello,</p>
+            <p>You have requested to reset your password for your NextPlore account. Please use the following code to reset your password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <div style="background-color: #007bff; color: #ffffff; padding: 15px 30px; border-radius: 5px; display: inline-block; font-size: 24px; font-weight: bold; letter-spacing: 5px;">
+                ${resetCode}
+              </div>
+            </div>
+            <p><strong>This code will expire in 10 minutes.</strong></p>
+            <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">This is an automated message, please do not reply to this email.</p>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Password Reset Request - NextPlore
+      
+      Hello,
+      
+      You have requested to reset your password for your NextPlore account. Please use the following code to reset your password:
+      
+      ${resetCode}
+      
+      This code will expire in 10 minutes.
+      
+      If you did not request a password reset, please ignore this email or contact support if you have concerns.
+      
+      This is an automated message, please do not reply to this email.
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Password reset code email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending password reset code email:", error);
+    throw new Error("Failed to send password reset code email");
+  }
+};
+
+/**
  * Verify email transporter configuration
  * @returns {Promise<boolean>} - Returns true if configuration is valid
  */

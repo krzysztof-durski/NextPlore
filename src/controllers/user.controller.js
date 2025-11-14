@@ -3,7 +3,10 @@ import Country from "../models/country.js";
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { sendVerificationEmail } from "../utils/emailService.js";
+import {
+  sendVerificationEmail,
+  sendPasswordResetCode,
+} from "../utils/emailService.js";
 
 const registerUser = asynchandler(async (req, res) => {
   const {
@@ -88,6 +91,49 @@ const registerUser = asynchandler(async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(201, userResponse, "User registered successfully"));
+});
+
+const loginUser = asynchandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate required fields
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  // Find user by email
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new ApiError(401, "Invalid email or password");
+  }
+
+  // Check if user is active
+  if (!user.is_active) {
+    throw new ApiError(403, "Account is deactivated. Please contact support.");
+  }
+
+  // Verify password
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid email or password");
+  }
+
+  // Return user data (exclude password)
+  const userResponse = {
+    user_id: user.user_id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    date_of_birth: user.date_of_birth,
+    country_id: user.country_id,
+    is_verified: user.is_verified,
+    is_adult: user.is_adult,
+    created_at: user.created_at,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userResponse, "Login successful"));
 });
 
 const sendVerificationEmailCode = asynchandler(async (req, res) => {
@@ -200,4 +246,179 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     );
 });
 
-export { registerUser, sendVerificationEmailCode, verifyEmailCode };
+const requestPasswordReset = asynchandler(async (req, res) => {
+  const { email } = req.body;
+
+  // Validate email is provided
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  // Find user by email
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    // For security, don't reveal if email exists or not
+    // Return success message even if user doesn't exist
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { email },
+          "If an account with this email exists, a password reset code has been sent"
+        )
+      );
+  }
+
+  // Check if user is active
+  if (!user.is_active) {
+    throw new ApiError(403, "Account is deactivated. Please contact support.");
+  }
+
+  // Generate 6-digit reset code
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Set expiration time (10 minutes from now)
+  const resetCodeExpires = new Date();
+  resetCodeExpires.setMinutes(resetCodeExpires.getMinutes() + 10);
+
+  // Save reset code and expiration to user
+  await user.update({
+    password_reset_token: resetCode,
+    password_reset_expires: resetCodeExpires,
+  });
+
+  // Send password reset email
+  try {
+    await sendPasswordResetCode(email, resetCode);
+  } catch (error) {
+    throw new ApiError(500, "Failed to send password reset email");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Password reset code sent successfully"
+      )
+    );
+});
+
+const resetPassword = asynchandler(async (req, res) => {
+  const { email, code, new_password, repeat_new_password } = req.body;
+
+  // Validate required fields
+  if (!email || !code || !new_password || !repeat_new_password) {
+    throw new ApiError(
+      400,
+      "Email, code, new password, and repeat new password are required"
+    );
+  }
+
+  // Validate password match
+  if (new_password !== repeat_new_password) {
+    throw new ApiError(400, "Passwords do not match");
+  }
+
+  // Find user by email
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Check if reset code exists
+  if (!user.password_reset_token) {
+    throw new ApiError(
+      400,
+      "No password reset code found. Please request a new one."
+    );
+  }
+
+  // Check if reset code has expired
+  if (new Date() > new Date(user.password_reset_expires)) {
+    throw new ApiError(
+      400,
+      "Password reset code has expired. Please request a new one."
+    );
+  }
+
+  // Verify the code
+  if (user.password_reset_token !== code) {
+    throw new ApiError(400, "Invalid password reset code");
+  }
+
+  // Update password and clear reset code
+  await user.update({
+    password: new_password, // Password will be hashed automatically by the beforeUpdate hook
+    password_reset_token: null,
+    password_reset_expires: null,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, { email: user.email }, "Password reset successfully")
+    );
+});
+
+const resendPasswordResetCode = asynchandler(async (req, res) => {
+  const { email } = req.body;
+
+  // Validate email is provided
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  // Find user by email
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Check if user is active
+  if (!user.is_active) {
+    throw new ApiError(403, "Account is deactivated. Please contact support.");
+  }
+
+  // Generate new 6-digit reset code
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Set expiration time (10 minutes from now)
+  const resetCodeExpires = new Date();
+  resetCodeExpires.setMinutes(resetCodeExpires.getMinutes() + 10);
+
+  // Save reset code and expiration to user
+  await user.update({
+    password_reset_token: resetCode,
+    password_reset_expires: resetCodeExpires,
+  });
+
+  // Send password reset email
+  try {
+    await sendPasswordResetCode(email, resetCode);
+  } catch (error) {
+    throw new ApiError(500, "Failed to send password reset email");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Password reset code resent successfully"
+      )
+    );
+});
+
+export {
+  registerUser,
+  loginUser,
+  sendVerificationEmailCode,
+  verifyEmailCode,
+  requestPasswordReset,
+  resetPassword,
+  resendPasswordResetCode,
+};
