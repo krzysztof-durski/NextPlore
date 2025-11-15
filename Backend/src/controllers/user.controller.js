@@ -994,16 +994,15 @@ const resendAccountDeletionCode = asynchandler(async (req, res) => {
     );
   }
 
-  return res.status(200);
-  // Password is valid - clear sensitive data and proceed with account deletion
-  await user.update({
-    is_active: false,
-    refresh_token: null,
-    account_deletion_verified: false,
-  });
-
-  // soft delete
-  await user.destroy();
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email: user.email },
+        "Account deletion verification email resent successfully"
+      )
+    );
 });
 
 const confirmAccountDeletion = asynchandler(async (req, res) => {
@@ -1032,8 +1031,10 @@ const confirmAccountDeletion = asynchandler(async (req, res) => {
   }
 
   // Password is valid - proceed with account deletion
+  // Clear refresh token and deactivate account before deletion
   await user.update({
     is_active: false,
+    refresh_token: null,
   });
 
   // soft delete

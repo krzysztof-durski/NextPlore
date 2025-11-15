@@ -22,6 +22,7 @@ export default function Account() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [activeModal, setActiveModal] = useState(null); // 'username', 'fullname', 'password', 'country', 'delete'
+  const [codeSent, setCodeSent] = useState(false); // Track if deletion code has been sent
   const [formData, setFormData] = useState({
     new_username: "",
     fullname: "",
@@ -224,11 +225,15 @@ export default function Account() {
   };
 
   const handleRequestDeleteCode = async () => {
+    setError("");
+    setSuccess("");
     try {
       await deleteAccount.sendCode();
       setSuccess("Verification code sent to your email");
+      setCodeSent(true);
     } catch (err) {
       setError(err.message || "Failed to send verification code");
+      setCodeSent(false);
     }
   };
 
@@ -241,7 +246,7 @@ export default function Account() {
       setFormData((prev) => ({ ...prev, fullname: user.fullname }));
     }
     if (modalType === "delete") {
-      handleRequestDeleteCode();
+      setCodeSent(false); // Reset code sent state when opening delete modal
     }
   };
 
@@ -249,6 +254,7 @@ export default function Account() {
     setActiveModal(null);
     setError("");
     setSuccess("");
+    setCodeSent(false);
     setFormData({
       new_username: "",
       fullname: user?.fullname || "",
@@ -587,49 +593,65 @@ export default function Account() {
           <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Delete Account</h3>
             <p className="delete-warning">
-              This action cannot be undone. Please enter the verification code
-              sent to your email and your password to confirm.
+              This action cannot be undone. Please click the button below to send a verification code
+              to your email, then enter the code and your password to confirm.
             </p>
-            <form onSubmit={handleDeleteAccount}>
+            {!codeSent && (
               <div className="form-group">
-                <label htmlFor="delete_code">Verification Code</label>
-                <input
-                  type="text"
-                  id="delete_code"
-                  name="delete_code"
-                  value={formData.delete_code}
-                  onChange={handleInputChange}
-                  required
-                  maxLength={6}
-                  placeholder="6-digit code"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="delete_password">Password</label>
-                <input
-                  type="password"
-                  id="delete_password"
-                  name="delete_password"
-                  value={formData.delete_password}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              {error && <div className="error-message">{error}</div>}
-              {success && <div className="success-message">{success}</div>}
-              <div className="modal-buttons">
-                <button type="submit" className="modal-submit-btn delete-submit-btn">
-                  DELETE ACCOUNT
-                </button>
                 <button
                   type="button"
-                  className="modal-cancel-btn"
-                  onClick={closeModal}
+                  className="modal-submit-btn"
+                  onClick={handleRequestDeleteCode}
+                  style={{ width: "100%", marginBottom: "20px" }}
                 >
-                  CANCEL
+                  SEND VERIFICATION CODE
                 </button>
               </div>
-            </form>
+            )}
+            {codeSent && (
+              <form onSubmit={handleDeleteAccount}>
+                <div className="form-group">
+                  <label htmlFor="delete_code">Verification Code</label>
+                  <input
+                    type="text"
+                    id="delete_code"
+                    name="delete_code"
+                    value={formData.delete_code}
+                    onChange={handleInputChange}
+                    required
+                    maxLength={6}
+                    placeholder="6-digit code"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="delete_password">Password</label>
+                  <input
+                    type="password"
+                    id="delete_password"
+                    name="delete_password"
+                    value={formData.delete_password}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                {error && <div className="error-message">{error}</div>}
+                {success && <div className="success-message">{success}</div>}
+                <div className="modal-buttons">
+                  <button type="submit" className="modal-submit-btn delete-submit-btn">
+                    DELETE ACCOUNT
+                  </button>
+                  <button
+                    type="button"
+                    className="modal-cancel-btn"
+                    onClick={closeModal}
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </form>
+            )}
+            {error && !codeSent && <div className="error-message">{error}</div>}
+            {success && !codeSent && <div className="success-message">{success}</div>}
           </div>
         </div>
       )}
