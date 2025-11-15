@@ -44,10 +44,26 @@ const registerUser = asynchandler(async (req, res) => {
     throw new ApiError(400, "Passwords do not match");
   }
 
-  // Check if user with email already exists
-  const existingUser = await User.findOne({ where: { email } });
+  // Check if user with email already exists (excluding soft-deleted users)
+  // This allows re-registration with emails from deleted accounts
+  const existingUser = await User.findOne({ 
+    where: { email },
+    paranoid: true // Only check non-deleted users
+  });
   if (existingUser) {
     throw new ApiError(409, "User with this email already exists");
+  }
+  
+  // Check if there's a soft-deleted user with this email
+  // If so, permanently delete it to allow re-registration with the same email
+  const deletedUser = await User.findOne({ 
+    where: { email },
+    paranoid: false // Include soft-deleted users
+  });
+  
+  if (deletedUser) {
+    // Permanently delete the soft-deleted user to free up the email
+    await deletedUser.destroy({ force: true });
   }
 
   // Validate country_id exists (country is selected from dropdown)
@@ -560,6 +576,9 @@ const getCurrentUser = asynchandler(async (req, res) => {
   // Get user from JWT authentication middleware
   const user = req.user;
 
+  // Load country information
+  await user.reload({ include: [{ model: Country, as: "country" }] });
+
   // Return user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
@@ -568,6 +587,7 @@ const getCurrentUser = asynchandler(async (req, res) => {
     email: user.email,
     date_of_birth: user.date_of_birth,
     country_id: user.country_id,
+    country_name: user.country ? user.country.country_name : null,
     phone_number: user.phone_number,
     is_verified: user.is_verified,
     is_adult: user.is_adult,
@@ -619,6 +639,9 @@ const changeUsername = asynchandler(async (req, res) => {
     username: new_username.trim(),
   });
 
+  // Reload user with country information
+  await user.reload({ include: [{ model: Country, as: "country" }] });
+
   // Return updated user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
@@ -627,6 +650,7 @@ const changeUsername = asynchandler(async (req, res) => {
     email: user.email,
     date_of_birth: user.date_of_birth,
     country_id: user.country_id,
+    country_name: user.country ? user.country.country_name : null,
     is_verified: user.is_verified,
     is_adult: user.is_adult,
     updated_at: user.updated_at,
@@ -676,6 +700,9 @@ const changeFullname = asynchandler(async (req, res) => {
     fullname: fullname.trim(),
   });
 
+  // Reload user with country information
+  await user.reload({ include: [{ model: Country, as: "country" }] });
+
   // Return updated user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
@@ -684,6 +711,7 @@ const changeFullname = asynchandler(async (req, res) => {
     email: user.email,
     date_of_birth: user.date_of_birth,
     country_id: user.country_id,
+    country_name: user.country ? user.country.country_name : null,
     is_verified: user.is_verified,
     is_adult: user.is_adult,
     updated_at: user.updated_at,
@@ -730,6 +758,9 @@ const changeCountry = asynchandler(async (req, res) => {
     country_id: newCountryId,
   });
 
+  // Reload user with country information
+  await user.reload({ include: [{ model: Country, as: "country" }] });
+
   // Return updated user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
@@ -738,6 +769,7 @@ const changeCountry = asynchandler(async (req, res) => {
     email: user.email,
     date_of_birth: user.date_of_birth,
     country_id: user.country_id,
+    country_name: user.country ? user.country.country_name : null,
     is_verified: user.is_verified,
     is_adult: user.is_adult,
     updated_at: user.updated_at,

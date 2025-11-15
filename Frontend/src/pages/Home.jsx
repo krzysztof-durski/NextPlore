@@ -118,7 +118,9 @@ export default function Home() {
           <button className="nav-btn" onClick={handleLogout}>
             LOGOUT
           </button>
-          <button className="nav-btn">PROFILE</button>
+          <button className="nav-btn" onClick={() => navigate("/account")}>
+            MY ACCOUNT
+          </button>
         </nav>
       </header>
 

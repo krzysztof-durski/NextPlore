@@ -9,6 +9,20 @@ const api = axios.create({
   },
 });
 
+// Add token to requests if available
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const login = async (email, password) => {
   try {
     const response = await api.post("/users/login", {
@@ -86,4 +100,127 @@ export const verifyEmailCode = async (email, code) => {
       error.response?.data?.message || "Email verification failed"
     );
   }
+};
+
+// Get current user
+export const getCurrentUser = async () => {
+  try {
+    const response = await api.get("/users/me");
+    return response.data.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to get user data");
+  }
+};
+
+// Change username
+export const changeUsername = async (newUsername, password) => {
+  try {
+    const response = await api.post("/users/change-username", {
+      new_username: newUsername,
+      password,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to change username"
+    );
+  }
+};
+
+// Change fullname
+export const changeFullname = async (fullname, password) => {
+  try {
+    const response = await api.post("/users/change-fullname", {
+      fullname,
+      password,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to change fullname"
+    );
+  }
+};
+
+// Change password
+export const changePassword = async (
+  oldPassword,
+  newPassword,
+  repeatNewPassword
+) => {
+  try {
+    const response = await api.post("/users/change-password", {
+      old_password: oldPassword,
+      new_password: newPassword,
+      repeat_new_password: repeatNewPassword,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to change password"
+    );
+  }
+};
+
+// Change country
+export const changeCountry = async (countryId) => {
+  try {
+    const response = await api.post("/users/change-country", {
+      country_id: countryId,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to change country"
+    );
+  }
+};
+
+// Account deletion
+export const deleteAccount = {
+  sendCode: async () => {
+    try {
+      const response = await api.post("/users/delete-account/send-code");
+      return response.data.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to send deletion verification code"
+      );
+    }
+  },
+  verifyCode: async (code) => {
+    try {
+      const response = await api.post("/users/delete-account/verify-code", {
+        code,
+      });
+      return response.data.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to verify deletion code"
+      );
+    }
+  },
+  resendCode: async () => {
+    try {
+      const response = await api.post("/users/delete-account/resend-code");
+      return response.data.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to resend deletion code"
+      );
+    }
+  },
+  confirm: async (password) => {
+    try {
+      const response = await api.post("/users/delete-account/confirm", {
+        password,
+      });
+      return response.data.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to delete account"
+      );
+    }
+  },
 };

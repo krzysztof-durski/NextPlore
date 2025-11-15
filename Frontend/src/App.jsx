@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import FilterPage from "./pages/FilterPage";
 import LocationDetails from "./pages/LocationDetails";
+import Account from "./pages/Account";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UnverifiedRoute from "./components/UnverifiedRoute";
 import GuestRoute from "./components/GuestRoute";
@@ -49,6 +50,14 @@ function App() {
           />
           <Route path="/filter" element={<FilterPage />} />
           <Route path="/location/:id" element={<LocationDetails />} />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </ErrorBoundary>
