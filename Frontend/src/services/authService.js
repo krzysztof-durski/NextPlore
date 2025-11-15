@@ -176,6 +176,54 @@ export const changeCountry = async (countryId) => {
   }
 };
 
+// Password reset
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await api.post("/users/request-password-reset", {
+      email,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to send password reset code"
+    );
+  }
+};
+
+export const resetPassword = async (
+  email,
+  code,
+  newPassword,
+  repeatNewPassword
+) => {
+  try {
+    const response = await api.post("/users/reset-password", {
+      email,
+      code,
+      new_password: newPassword,
+      repeat_new_password: repeatNewPassword,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to reset password"
+    );
+  }
+};
+
+export const resendPasswordResetCode = async (email) => {
+  try {
+    const response = await api.post("/users/resend-password-reset-code", {
+      email,
+    });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to resend password reset code"
+    );
+  }
+};
+
 // Account deletion
 export const deleteAccount = {
   sendCode: async () => {

@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
+import ForgotPassword from "./pages/ForgotPassword";
 import FilterPage from "./pages/FilterPage";
 import LocationDetails from "./pages/LocationDetails";
 import Account from "./pages/Account";
@@ -38,6 +39,14 @@ function App() {
               <UnverifiedRoute>
                 <VerifyEmail />
               </UnverifiedRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <GuestRoute>
+                <ForgotPassword />
+              </GuestRoute>
             }
           />
           <Route
