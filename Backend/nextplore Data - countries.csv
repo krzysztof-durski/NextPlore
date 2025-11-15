@@ -1,0 +1,197 @@
+country_id,country_name,country_code,flag
+1,Afghanistan,AF,🇦🇫
+2,Albania,AL,🇦🇱
+3,Algeria,DZ,🇩🇿
+4,Andorra,AD,🇦🇩
+5,Angola,AO,🇦🇴
+6,Antigua and Barbuda,AG,🇦🇬
+7,Argentina,AR,🇦🇷
+8,Armenia,AM,🇦🇲
+9,Australia,AU,🇦🇺
+10,Austria,AT,🇦🇹
+11,Azerbaijan,AZ,🇦🇿
+12,Bahamas,BS,🇧🇸
+13,Bahrain,BH,🇧🇭
+14,Bangladesh,BD,🇧🇩
+15,Barbados,BB,🇧🇧
+16,Belarus,BY,🇧🇾
+17,Belgium,BE,🇧🇪
+18,Belize,BZ,🇧🇿
+19,Benin,BJ,🇧🇯
+20,Bhutan,BT,🇧🇹
+21,Bolivia,BO,🇧🇴
+22,Bosnia and Herzegovina,BA,🇧🇦
+23,Botswana,BW,🇧🇼
+24,Brazil,BR,🇧🇷
+25,Brunei,BN,🇧🇳
+26,Bulgaria,BG,🇧🇬
+27,Burkina Faso,BF,🇧🇫
+28,Burundi,BI,🇧🇮
+29,Cabo Verde,CV,🇨🇻
+30,Cambodia,KH,🇰🇭
+31,Cameroon,CM,🇨🇲
+32,Canada,CA,🇨🇦
+33,Central African Republic,CF,🇨🇫
+34,Chad,TD,🇹🇩
+35,Chile,CL,🇨🇱
+36,China,CN,🇨🇳
+37,Colombia,CO,🇨🇴
+38,Comoros,KM,🇰🇲
+39,Congo (Brazzaville),CG,🇨🇬
+40,Congo (Kinshasa),CD,🇨🇩
+41,Costa Rica,CR,🇨🇷
+42,Côte d'Ivoire,CI,🇨🇮
+43,Croatia,HR,🇭🇷
+44,Cuba,CU,🇨🇺
+45,Cyprus,CY,🇨🇾
+46,Czechia,CZ,🇨🇿
+47,Denmark,DK,🇩🇰
+48,Djibouti,DJ,🇩🇯
+49,Dominica,DM,🇩🇲
+50,Dominican Republic,DO,🇩🇴
+51,Ecuador,EC,🇪🇨
+52,Egypt,EG,🇪🇬
+53,El Salvador,SV,🇸🇻
+54,Equatorial Guinea,GQ,🇬🇶
+55,Eritrea,ER,🇪🇷
+56,Estonia,EE,🇪🇪
+57,Eswatini,SZ,🇸🇿
+58,Ethiopia,ET,🇪🇹
+59,Fiji,FJ,🇫🇯
+60,Finland,FI,🇫🇮
+61,France,FR,🇫🇷
+62,Gabon,GA,🇬🇦
+63,Gambia,GM,🇬🇲
+64,Georgia,GE,🇬🇪
+65,Germany,DE,🇩🇪
+66,Ghana,GH,🇬🇭
+67,Greece,GR,🇬🇷
+68,Grenada,GD,🇬🇩
+69,Guatemala,GT,🇬🇹
+70,Guinea,GN,🇬🇳
+71,Guinea-Bissau,GW,🇬🇼
+72,Guyana,GY,🇬🇾
+73,Haiti,HT,🇭🇹
+74,Honduras,HN,🇭🇳
+75,Hungary,HU,🇭🇺
+76,Iceland,IS,🇮🇸
+77,India,IN,🇮🇳
+78,Indonesia,ID,🇮🇩
+79,Iran,IR,🇮🇷
+80,Iraq,IQ,🇮🇶
+81,Ireland,IE,🇮🇪
+82,Israel,IL,🇮🇱
+83,Italy,IT,🇮🇹
+84,Jamaica,JM,🇯🇲
+85,Japan,JP,🇯🇵
+86,Jordan,JO,🇯🇴
+87,Kazakhstan,KZ,🇰🇿
+88,Kenya,KE,🇰🇪
+89,Kiribati,KI,🇰🇮
+90,Kuwait,KW,🇰🇼
+91,Kyrgyzstan,KG,🇰🇬
+92,Laos,LA,🇱🇦
+93,Latvia,LV,🇱🇻
+94,Lebanon,LB,🇱🇧
+95,Lesotho,LS,🇱🇸
+96,Liberia,LR,🇱🇷
+97,Libya,LY,🇱🇾
+98,Liechtenstein,LI,🇱🇮
+99,Lithuania,LT,🇱🇹
+100,Luxembourg,LU,🇱🇺
+101,Madagascar,MG,🇲🇬
+102,Malawi,MW,🇲🇼
+103,Malaysia,MY,🇲🇾
+104,Maldives,MV,🇲🇻
+105,Mali,ML,🇲🇱
+106,Malta,MT,🇲🇹
+107,Marshall Islands,MH,🇲🇭
+108,Mauritania,MR,🇲🇷
+109,Mauritius,MU,🇲🇺
+110,Mexico,MX,🇲🇽
+111,Micronesia,FM,🇫🇲
+112,Moldova,MD,🇲🇩
+113,Monaco,MC,🇲🇨
+114,Mongolia,MN,🇲🇳
+115,Montenegro,ME,🇲🇪
+116,Morocco,MA,🇲🇦
+117,Mozambique,MZ,🇲🇿
+118,Myanmar,MM,🇲🇲
+119,Namibia,NA,🇳🇦
+120,Nauru,NR,🇳🇷
+121,Nepal,NP,🇳🇵
+122,Netherlands,NL,🇳🇱
+123,New Zealand,NZ,🇳🇿
+124,Nicaragua,NI,🇳🇮
+125,Niger,NE,🇳🇪
+126,Nigeria,NG,🇳🇬
+127,North Korea,KP,🇰🇵
+128,North Macedonia,MK,🇲🇰
+129,Norway,NO,🇳🇴
+130,Oman,OM,🇴🇲
+131,Pakistan,PK,🇵🇰
+132,Palau,PW,🇵🇼
+133,Palestine,PS,🇵🇸
+134,Panama,PA,🇵🇦
+135,Papua New Guinea,PG,🇵🇬
+136,Paraguay,PY,🇵🇾
+137,Peru,PE,🇵🇪
+138,Philippines,PH,🇵🇭
+139,Poland,PL,🇵🇱
+140,Portugal,PT,🇵🇹
+141,Qatar,QA,🇶🇦
+142,Romania,RO,🇷🇴
+143,Russia,RU,🇷🇺
+144,Rwanda,RW,🇷🇼
+145,Saint Kitts and Nevis,KN,🇰🇳
+146,Saint Lucia,LC,🇱🇨
+147,Saint Vincent and the Grenadines,VC,🇻🇨
+148,Samoa,WS,🇼🇸
+149,San Marino,SM,🇸🇲
+150,Sao Tome and Principe,ST,🇸🇹
+151,Saudi Arabia,SA,🇸🇦
+152,Senegal,SN,🇸🇳
+153,Serbia,RS,🇷🇸
+154,Seychelles,SC,🇸🇨
+155,Sierra Leone,SL,🇸🇱
+156,Singapore,SG,🇸🇬
+157,Slovakia,SK,🇸🇰
+158,Slovenia,SI,🇸🇮
+159,Solomon Islands,SB,🇸🇧
+160,Somalia,SO,🇸🇴
+161,South Africa,ZA,🇿🇦
+162,South Korea,KR,🇰🇷
+163,South Sudan,SS,🇸🇸
+164,Spain,ES,🇪🇸
+165,Sri Lanka,LK,🇱🇰
+166,Sudan,SD,🇸🇩
+167,Suriname,SR,🇸🇷
+168,Sweden,SE,🇸🇪
+169,Switzerland,CH,🇨🇭
+170,Syria,SY,🇸🇾
+171,Taiwan,TW,🇹🇼
+172,Tajikistan,TJ,🇹🇯
+173,Tanzania,TZ,🇹🇿
+174,Thailand,TH,🇹🇭
+175,Timor-Leste,TL,🇹🇱
+176,Togo,TG,🇹🇬
+177,Tonga,TO,🇹🇴
+178,Trinidad and Tobago,TT,🇹🇹
+179,Tunisia,TN,🇹🇳
+180,Turkey,TR,🇹🇷
+181,Turkmenistan,TM,🇹🇲
+182,Tuvalu,TV,🇹🇻
+183,Uganda,UG,🇺🇬
+184,Ukraine,UA,🇺🇦
+185,United Arab Emirates,AE,🇦🇪
+186,United Kingdom,GB,🇬🇧
+187,United States,US,🇺🇸
+188,Uruguay,UY,🇺🇾
+189,Uzbekistan,UZ,🇺🇿
+190,Vanuatu,VU,🇻🇺
+191,Vatican City,VA,🇻🇦
+192,Venezuela,VE,🇻🇪
+193,Vietnam,VN,🇻🇳
+194,Yemen,YE,🇾🇪
+195,Zambia,ZM,🇿🇲
+196,Zimbabwe,ZW,🇿🇼
