@@ -3,21 +3,265 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #000;
 }
 
+/* Header Styles */
 .header {
-  background-color: #2c3e50;
+  background-color: #1a1a1a;
   color: white;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-.header h1 {
-  margin-bottom: 15px;
-  font-size: 28px;
+.logo {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
 
+.nav-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-btn {
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+}
+
+.nav-btn.active {
+  background-color: #2a2a2a;
+}
+
+/* Main Content Layout */
 .main-content {
   flex: 1;
+  display: flex;
   overflow: hidden;
+}
+
+/* Sidebar with Location Cards */
+.sidebar {
+  width: 500px;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  position: relative;
+  z-index: 1000;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Location Cards */
+.location-card {
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 15px;
+  padding: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.location-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.location-card:hover::before {
+  left: 100%;
+}
+
+.location-card:hover {
+  background: rgba(30, 30, 30, 0.95);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.location-card.selected {
+  background: rgba(50, 50, 50, 0.95);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.location-name {
+  color: white;
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 0 15px 0;
+  letter-spacing: 1px;
+}
+
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+/* Loading and Error Messages */
+.loading-message,
+.error-message,
+.empty-message {
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+.error-message {
+  color: #ff6b6b;
+}
+
+/* Map Section */
+.map-section {
+  flex: 1;
+  position: relative;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 18px;
+}
+
+/* Filter Button */
+.filter-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 15px 35px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.filter-btn:hover {
+  background-color: rgba(30, 30, 30, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.filter-btn .arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.filter-btn:hover .arrow {
+  transform: translateX(5px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-height: 40vh;
+  }
+
+  .header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .nav-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-btn {
+    padding: 10px 20px;
+    font-size: 11px;
+  }
+
+  .filter-btn {
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 25px;
+    font-size: 12px;
+  }
 }

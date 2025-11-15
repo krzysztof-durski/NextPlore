@@ -1,0 +1,297 @@
+/* Login Page - Matching Dark Theme */
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.login-container {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Logo Container */
+.logo-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo-text {
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: white;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Login Form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(30, 30, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 18px 24px;
+  color: white;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  outline: none;
+  backdrop-filter: blur(10px);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: lowercase;
+}
+
+.form-input:focus {
+  background: rgba(40, 40, 40, 0.7);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-input:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Forgot Password Link */
+.forgot-password-link {
+  position: absolute;
+  bottom: -25px;
+  right: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  text-transform: lowercase;
+  transition: all 0.3s ease;
+  padding: 4px 0;
+}
+
+.forgot-password-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateX(-2px);
+}
+
+/* Success Message */
+.success-message {
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 8px;
+  padding: 12px 18px;
+  color: #4caf50;
+  font-size: 13px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Error Message */
+.error-message {
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 12px 18px;
+  color: #ff6b6b;
+  font-size: 13px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  animation: shake 0.5s ease-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Login Button */
+.login-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 18px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.login-btn:hover:not(:disabled)::before {
+  width: 400px;
+  height: 400px;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 10px 0;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.divider span {
+  padding: 0 15px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: lowercase;
+}
+
+/* Register Button */
+.register-btn {
+  width: 100%;
+  background: rgba(30, 30, 30, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 18px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: lowercase;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: block;
+}
+
+.register-btn:hover {
+  background: rgba(40, 40, 40, 0.7);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.register-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    max-width: 100%;
+    gap: 40px;
+  }
+
+  .logo-text {
+    font-size: 28px;
+    letter-spacing: 4px;
+  }
+
+  .form-input,
+  .login-btn,
+  .register-btn {
+    padding: 16px 20px;
+    font-size: 14px;
+  }
+
+  .forgot-password-link {
+    font-size: 11px;
+    bottom: -22px;
+  }
+}
+

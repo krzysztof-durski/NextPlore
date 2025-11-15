@@ -1,27 +1,52 @@
-import React from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import React, { useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import '../styles/Map.css'
 
-export default function MapComponent({ locations, userLocation }) {
-  const createCustomIcon = (iconPrefix, iconSuffix) => {
+// Component to handle map interactions
+function MapController({ selectedLocation }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (selectedLocation && selectedLocation.location?.coordinates) {
+      const [lon, lat] = selectedLocation.location.coordinates
+      map.flyTo([lat, lon], 15, {
+        duration: 1.5
+      })
+    }
+  }, [selectedLocation, map])
+
+  return null
+}
+
+export default function MapComponent({ locations, userLocation, selectedLocation, onLocationSelect }) {
+  const createCustomIcon = (iconPrefix, iconSuffix, isSelected = false) => {
     if (!iconPrefix || !iconSuffix) {
       // Default icon if no custom icon
       return L.icon({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
+        iconSize: isSelected ? [35, 57] : [25, 41],
+        iconAnchor: isSelected ? [17.5, 57] : [12, 41],
         popupAnchor: [1, -34],
-        shadowSize: [41, 41]
+        shadowSize: isSelected ? [57, 57] : [41, 41]
       })
     }
 
     return L.icon({
       iconUrl: `${iconPrefix}bg_64${iconSuffix}`,
-      iconSize: [64, 64],
-      iconAnchor: [32, 64],
-      popupAnchor: [0, -64]
+      iconSize: isSelected ? [80, 80] : [50, 50],
+      iconAnchor: isSelected ? [40, 80] : [25, 50],
+      popupAnchor: [0, isSelected ? -80 : -50]
+    })
+  }
+
+  const createUserIcon = () => {
+    return L.divIcon({
+      className: 'user-location-marker',
+      html: '<div class="user-marker-inner"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
     })
   }
 
@@ -30,32 +55,53 @@ export default function MapComponent({ locations, userLocation }) {
       center={[userLocation.latitude, userLocation.longitude]} 
       zoom={13} 
       className="map-container"
+      zoomControl={true}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; OpenStreetMap contributors'
       />
       
+      <MapController selectedLocation={selectedLocation} />
+      
       {/* User location marker */}
-      <Marker position={[userLocation.latitude, userLocation.longitude]}>
-        <Popup>Your Location</Popup>
+      <Marker 
+        position={[userLocation.latitude, userLocation.longitude]}
+        icon={createUserIcon()}
+      >
+        <Popup>
+          <div className="popup-content">
+            <strong>Your Location</strong>
+          </div>
+        </Popup>
       </Marker>
 
       {/* Location markers */}
-      {locations.map((location) => (
+      {locations.map((location) => {
+        if (!location.location?.coordinates) return null
+        
+        const [lon, lat] = location.location.coordinates
+        const isSelected = selectedLocation?.location_id === location.location_id
+
+        return (
         <Marker
           key={location.location_id}
-          position={[location.location.coordinates[1], location.location.coordinates[0]]}
-          icon={createCustomIcon(location.icon_prefix, location.icon_suffix)}
+            position={[lat, lon]}
+            icon={createCustomIcon(location.icon_prefix, location.icon_suffix, isSelected)}
+            eventHandlers={{
+              click: () => onLocationSelect(location)
+            }}
         >
           <Popup>
-            <div>
+              <div className="popup-content">
               <h3>{location.name}</h3>
               <p>{location.address}</p>
+                {location.description && <p className="description">{location.description}</p>}
             </div>
           </Popup>
         </Marker>
-      ))}
+        )
+      })}
     </MapContainer>
   )
 }
