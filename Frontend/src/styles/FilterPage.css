@@ -9,6 +9,52 @@
   scroll-behavior: smooth;
 }
 
+/* Header Styles - Matching Account page */
+.account-header {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.account-logo {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.account-nav-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.account-nav-btn {
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.account-nav-btn:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+}
+
+.account-nav-btn.active {
+  background-color: #2a2a2a;
+}
+
 .filter-page::-webkit-scrollbar {
   width: 12px;
 }
@@ -516,6 +562,23 @@
 }
 
 @media (max-width: 768px) {
+  .account-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .account-nav-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .account-nav-btn {
+    padding: 10px 20px;
+    font-size: 11px;
+  }
+
   .filter-container {
     padding: 20px 25px 100px;
   }

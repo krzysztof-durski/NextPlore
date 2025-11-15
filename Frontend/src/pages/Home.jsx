@@ -111,14 +111,14 @@ export default function Home() {
   return (
     <div className="home">
       {/* Header */}
-      <header className="header">
-        <h1 className="logo">NEXTPLORE</h1>
-        <nav className="nav-buttons">
-          <button className="nav-btn active">HOME</button>
-          <button className="nav-btn" onClick={handleLogout}>
+      <header className="account-header">
+        <h1 className="account-logo">NEXTPLORE</h1>
+        <nav className="account-nav-buttons">
+          <button className="account-nav-btn active">HOME</button>
+          <button className="account-nav-btn" onClick={handleLogout}>
             LOGOUT
           </button>
-          <button className="nav-btn" onClick={() => navigate("/account")}>
+          <button className="account-nav-btn" onClick={() => navigate("/account")}>
             MY ACCOUNT
           </button>
         </nav>

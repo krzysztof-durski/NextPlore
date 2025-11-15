@@ -27,7 +27,7 @@ async function StartServer() {
     console.log("Tag model synchronized.");
 
     // User depends on Country
-    await User.sync({ force: true });
+    await User.sync({ force: false });
     console.log("User model synchronized.");
 
     // Location can be synced (country_code is just a string, not FK)

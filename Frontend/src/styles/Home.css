@@ -6,8 +6,8 @@
   background-color: #000;
 }
 
-/* Header Styles */
-.header {
+/* Header Styles - Matching Account page */
+.account-header {
   background-color: #1a1a1a;
   color: white;
   padding: 20px 40px;
@@ -17,7 +17,7 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-.logo {
+.account-logo {
   margin: 0;
   font-size: 24px;
   font-weight: 300;
@@ -25,12 +25,12 @@
   text-transform: uppercase;
 }
 
-.nav-buttons {
+.account-nav-buttons {
   display: flex;
   gap: 15px;
 }
 
-.nav-btn {
+.account-nav-btn {
   background-color: #000;
   color: white;
   border: none;
@@ -43,12 +43,12 @@
   transition: all 0.3s ease;
 }
 
-.nav-btn:hover {
+.account-nav-btn:hover {
   background-color: #333;
   transform: translateY(-2px);
 }
 
-.nav-btn.active {
+.account-nav-btn.active {
   background-color: #2a2a2a;
 }
 
@@ -241,19 +241,19 @@
     max-height: 40vh;
   }
 
-  .header {
+  .account-header {
     padding: 15px 20px;
     flex-direction: column;
     gap: 15px;
     align-items: flex-start;
   }
 
-  .nav-buttons {
+  .account-nav-buttons {
     width: 100%;
-    justify-content: space-between;
+    flex-wrap: wrap;
   }
 
-  .nav-btn {
+  .account-nav-btn {
     padding: 10px 20px;
     font-size: 11px;
   }

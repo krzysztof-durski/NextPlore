@@ -50,3 +50,12 @@ export const getPlaceDetails = async (id) => {
     throw new Error(error.response?.data?.message || 'Failed to fetch location details')
   }
 }
+
+export const getAllTags = async () => {
+  try {
+    const response = await api.get('/tags/')
+    return response.data.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch tags')
+  }
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getRecommendedLocations } from "../services/locationService";
+import { getRecommendedLocations, getAllTags } from "../services/locationService";
 import "../styles/FilterPage.css";
 
 export default function FilterPage() {
@@ -14,43 +14,19 @@ export default function FilterPage() {
   const [availableTags, setAvailableTags] = useState([]);
 
   useEffect(() => {
-    // TODO: Fetch tags from backend
-    // For now using placeholder tags
-    const placeholderTags = [
-      "Restaurant",
-      "Museum",
-      "Park",
-      "Cafe",
-      "Theater",
-      "Gallery",
-      "Cinema",
-      "Bar",
-      "Library",
-      "Stadium",
-      "Beach",
-      "Mountain",
-      "Shopping",
-      "Nightlife",
-      "History",
-      "Art",
-      "Music",
-      "Sports",
-      "Nature",
-      "Adventure",
-      "Relaxing",
-      "Romantic",
-      "Family",
-      "Cultural",
-      "Modern",
-      "Traditional",
-      "Outdoor",
-      "Indoor",
-      "Active",
-      "Peaceful",
-      "Exciting",
-      "Scenic",
-    ];
-    setAvailableTags(placeholderTags);
+    const fetchTags = async () => {
+      try {
+        const tags = await getAllTags();
+        // Extract tag names from the response
+        const tagNames = tags.map(tag => tag.name);
+        setAvailableTags(tagNames);
+      } catch (error) {
+        console.error("Failed to fetch tags:", error);
+        // Fallback to empty array if fetch fails
+        setAvailableTags([]);
+      }
+    };
+    fetchTags();
   }, []);
 
   const handleTagClick = (tag) => {
@@ -100,9 +76,31 @@ export default function FilterPage() {
     navigate("/");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    navigate("/login");
+  };
+
   if (!userLocation) {
     return (
       <div className="filter-page">
+        {/* Header */}
+        <header className="account-header">
+          <h1 className="account-logo">NEXTPLORE</h1>
+          <nav className="account-nav-buttons">
+            <button className="account-nav-btn" onClick={handleBack}>
+              HOME
+            </button>
+            <button className="account-nav-btn" onClick={handleLogout}>
+              LOGOUT
+            </button>
+            <button className="account-nav-btn" onClick={() => navigate("/account")}>
+              MY ACCOUNT
+            </button>
+            <button className="account-nav-btn active">FILTER</button>
+          </nav>
+        </header>
         <div className="error-container">
           <h2>Error: No location data</h2>
           <p>Please return to the home page</p>
@@ -116,12 +114,24 @@ export default function FilterPage() {
 
   return (
     <div className="filter-page">
+      {/* Header */}
+      <header className="account-header">
+        <h1 className="account-logo">NEXTPLORE</h1>
+        <nav className="account-nav-buttons">
+          <button className="account-nav-btn" onClick={handleBack}>
+            HOME
+          </button>
+          <button className="account-nav-btn" onClick={handleLogout}>
+            LOGOUT
+          </button>
+          <button className="account-nav-btn" onClick={() => navigate("/account")}>
+            MY ACCOUNT
+          </button>
+          <button className="account-nav-btn active">FILTER</button>
+        </nav>
+      </header>
+
       <div className="filter-container">
-        {/* Back Button */}
-        <button className="back-btn" onClick={handleBack}>
-          <span className="arrow-left">←</span>
-          BACK
-        </button>
 
         {/* Header Section with Distance Slider */}
         <div className="filter-header">

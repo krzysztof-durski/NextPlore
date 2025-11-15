@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import userRoutes from "./src/routes/user.route.js";
 import countryRoutes from "./src/routes/country.route.js";
 import locationRoutes from "./src/routes/locations.route.js";
+import tagRoutes from "./src/routes/tag.route.js";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.get("/health", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/locations", locationRoutes);
+app.use("/api/tags", tagRoutes);
 
 // 404 handler
 app.use((req, res) => {
