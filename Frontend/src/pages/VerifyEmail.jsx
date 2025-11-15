@@ -17,6 +17,12 @@ export default function VerifyEmail() {
     // Get email from location state (passed from register page)
     if (location.state?.email) {
       setEmail(location.state.email);
+    } else {
+      // Check localStorage for pending verification email
+      const pendingEmail = localStorage.getItem("pendingVerificationEmail");
+      if (pendingEmail) {
+        setEmail(pendingEmail);
+      }
     }
   }, [location.state]);
 
@@ -33,9 +39,28 @@ export default function VerifyEmail() {
 
     try {
       await sendVerificationCode(email);
-      setSuccessMessage("Verification code sent successfully! Please check your email.");
+      setSuccessMessage(
+        "Verification code sent successfully! Please check your email."
+      );
+      // Store email in localStorage if not already there (for route protection)
+      if (!localStorage.getItem("pendingVerificationEmail")) {
+        localStorage.setItem("pendingVerificationEmail", email);
+      }
     } catch (err) {
-      setError(err.message || "Failed to send verification code. Please try again.");
+      setError(
+        err.message || "Failed to send verification code. Please try again."
+      );
+      // If user not found or already verified, clear localStorage and redirect
+      if (
+        err.message?.includes("not found") ||
+        err.message?.includes("already verified")
+      ) {
+        localStorage.removeItem("pendingVerificationEmail");
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 2000);
+      }
     } finally {
       setSendingCode(false);
     }
@@ -60,6 +85,8 @@ export default function VerifyEmail() {
         localStorage.setItem("accessToken", result.accessToken);
         localStorage.setItem("refreshToken", result.refreshToken);
       }
+      // Clear pending verification email from localStorage
+      localStorage.removeItem("pendingVerificationEmail");
       // Navigate to home page after successful verification
       navigate("/", {
         state: {
@@ -67,7 +94,10 @@ export default function VerifyEmail() {
         },
       });
     } catch (err) {
-      setError(err.message || "Verification failed. Please check your code and try again.");
+      setError(
+        err.message ||
+          "Verification failed. Please check your code and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -109,7 +139,11 @@ export default function VerifyEmail() {
                 className="send-code-btn"
                 disabled={loading || sendingCode || !email}
               >
-                {sendingCode ? "Sending..." : email ? `Send verification email to ${email}` : "Send verification email"}
+                {sendingCode
+                  ? "Sending..."
+                  : email
+                  ? `Send verification email to ${email}`
+                  : "Send verification email"}
               </button>
             </form>
           </div>
@@ -126,7 +160,9 @@ export default function VerifyEmail() {
                   id="code"
                   name="code"
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   className="form-input code-input"
                   placeholder="Enter 6-digit code from email"
                   maxLength="6"
@@ -145,10 +181,11 @@ export default function VerifyEmail() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
-          {successMessage && <div className="success-message">{successMessage}</div>}
+          {successMessage && (
+            <div className="success-message">{successMessage}</div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-

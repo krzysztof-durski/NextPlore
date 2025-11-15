@@ -68,6 +68,8 @@ export default function Register() {
 
     try {
       await register(formData);
+      // Store email in localStorage for verification route protection
+      localStorage.setItem("pendingVerificationEmail", formData.email);
       // Navigate to verify email page after successful registration
       navigate("/verify-email", {
         state: {

@@ -16,7 +16,11 @@ export default function Home() {
   useEffect(() => {
     // Check if we have filtered locations from navigation state
     if (location.state?.filteredLocations) {
-      setLocations(location.state.filteredLocations);
+      // Ensure filteredLocations is an array
+      const filtered = Array.isArray(location.state.filteredLocations)
+        ? location.state.filteredLocations
+        : [];
+      setLocations(filtered);
       setLoading(false);
       // Clear the state to prevent reusing on refresh
       window.history.replaceState({}, document.title);
@@ -55,9 +59,23 @@ export default function Home() {
       setLoading(true);
       setError(null);
       const data = await getNearbyLocations(lat, lon, radius);
-      setLocations(data);
+      // Log the data to debug
+      console.log(
+        "Fetched locations data:",
+        data,
+        "Type:",
+        typeof data,
+        "IsArray:",
+        Array.isArray(data)
+      );
+      // Ensure data is an array before setting it
+      const locationsArray = Array.isArray(data) ? data : [];
+      setLocations(locationsArray);
     } catch (err) {
-      setError(err.message);
+      console.error("Error fetching nearby locations:", err);
+      setError(err.message || "Failed to fetch nearby locations");
+      // Set empty array on error to prevent map errors
+      setLocations([]);
     } finally {
       setLoading(false);
     }
@@ -114,34 +132,40 @@ export default function Home() {
 
           {error && <div className="error-message">{error}</div>}
 
-          {!loading && locations.length === 0 && !error && (
-            <div className="empty-message">No nearby locations found</div>
-          )}
+          {!loading &&
+            Array.isArray(locations) &&
+            locations.length === 0 &&
+            !error && (
+              <div className="empty-message">No nearby locations found</div>
+            )}
 
-          {locations.map((location) => (
-            <div
-              key={location.location_id}
-              className={`location-card ${
-                selectedLocation?.location_id === location.location_id
-                  ? "selected"
-                  : ""
-              }`}
-              onClick={() => handleLocationCardClick(location.location_id)}
-            >
-              <h3 className="location-name">{location.name || "place"}</h3>
-              <div className="location-info">
-                <p className="info-item">{location.address || "INFO 1"}</p>
-                <p className="info-item">{location.description || "INFO 1"}</p>
-                <p className="info-item">
-                  {location.location?.coordinates
-                    ? `${location.location.coordinates[1].toFixed(
-                        4
-                      )}, ${location.location.coordinates[0].toFixed(4)}`
-                    : "INFO 1"}
-                </p>
+          {Array.isArray(locations) &&
+            locations.map((location) => (
+              <div
+                key={location.location_id}
+                className={`location-card ${
+                  selectedLocation?.location_id === location.location_id
+                    ? "selected"
+                    : ""
+                }`}
+                onClick={() => handleLocationCardClick(location.location_id)}
+              >
+                <h3 className="location-name">{location.name || "place"}</h3>
+                <div className="location-info">
+                  <p className="info-item">{location.address || "INFO 1"}</p>
+                  <p className="info-item">
+                    {location.description || "INFO 1"}
+                  </p>
+                  <p className="info-item">
+                    {location.location?.coordinates
+                      ? `${location.location.coordinates[1].toFixed(
+                          4
+                        )}, ${location.location.coordinates[0].toFixed(4)}`
+                      : "INFO 1"}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </aside>
 
         {/* Map */}

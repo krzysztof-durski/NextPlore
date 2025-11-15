@@ -83,7 +83,7 @@ export default function MapComponent({
       </Marker>
 
       {/* Location markers */}
-      {locations.map((location) => {
+      {Array.isArray(locations) && locations.map((location) => {
         if (!location.location?.coordinates) return null;
 
         const [lon, lat] = location.location.coordinates;

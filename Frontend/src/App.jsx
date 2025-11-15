@@ -5,19 +5,53 @@ import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import FilterPage from "./pages/FilterPage";
 import LocationDetails from "./pages/LocationDetails";
+import ProtectedRoute from "./components/ProtectedRoute";
+import UnverifiedRoute from "./components/UnverifiedRoute";
+import GuestRoute from "./components/GuestRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/filter" element={<FilterPage />} />
-        <Route path="/location/:id" element={<LocationDetails />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <Register />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/verify-email"
+            element={
+              <UnverifiedRoute>
+                <VerifyEmail />
+              </UnverifiedRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/filter" element={<FilterPage />} />
+          <Route path="/location/:id" element={<LocationDetails />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
