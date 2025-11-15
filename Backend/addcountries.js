@@ -1,16 +1,20 @@
-import fs from 'fs';
-import csv from 'csv-parser';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import csv from "csv-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // --- Make sure these paths are correct ---
-import sequelize from './src/db/database.js';
-import Country from './src/models/country.js';
+import sequelize from "./src/db/database.js";
+import Country from "./src/models/country.js";
 // ---
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const csvFilePath = path.join(__dirname, 'nextplore Data - countries.csv'); // Make sure this is your COUNTRIES file
+const csvFilePath = path.join(
+  __dirname,
+  "DATA-CSVs",
+  "nextplore Data - countries.csv"
+); // Make sure this is your COUNTRIES file
 
 async function importCountries() {
   console.log("Starting country import process...");
@@ -21,7 +25,9 @@ async function importCountries() {
 
   for await (const row of stream) {
     if (!row.country_code) {
-      console.warn(`Skipping row with empty country_code (Name: ${row.country_name})`);
+      console.warn(
+        `Skipping row with empty country_code (Name: ${row.country_name})`
+      );
       continue;
     }
 
@@ -29,7 +35,7 @@ async function importCountries() {
       const countryData = {
         country_name: row.country_name,
         country_code: row.country_code.toUpperCase(),
-        flag: row.flag || null
+        flag: row.flag || null,
       };
 
       // Use findOrCreate without a transaction.
@@ -40,10 +46,14 @@ async function importCountries() {
       });
 
       if (created) {
-        console.log(`Successfully created country: ${country.country_name} (ID: ${country.country_id})`);
+        console.log(
+          `Successfully created country: ${country.country_name} (ID: ${country.country_id})`
+        );
       }
     } catch (error) {
-      console.error(`Failed to import country ${row.country_name}: ${error.message}`);
+      console.error(
+        `Failed to import country ${row.country_name}: ${error.message}`
+      );
     }
   }
 
@@ -51,7 +61,7 @@ async function importCountries() {
   await sequelize.close();
 }
 
-importCountries().catch(err => {
+importCountries().catch((err) => {
   console.error("Critical error during country import:", err);
   process.exit(1);
 });

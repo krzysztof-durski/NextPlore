@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/database.js";
+import Country from "./country.js";
 
 const Location = sequelize.define(
   "location",
@@ -39,7 +40,7 @@ const Location = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "country",
+        model: Country,
         key: "country_id",
       },
     },
@@ -50,6 +51,8 @@ const Location = sequelize.define(
     updatedAt: "updated_at",
     paranoid: true,
     deletedAt: "deleted_at",
+    tableName: "locations",
+    freezeTableName: true,
   }
 );
 

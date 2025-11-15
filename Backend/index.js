@@ -13,21 +13,25 @@ async function StartServer() {
     await sequelize.authenticate();
     console.log("Database connected successfully.");
 
+    // Enable PostGIS extension for geography/geometry support
+    await sequelize.query("CREATE EXTENSION IF NOT EXISTS postgis;");
+    console.log("PostGIS extension enabled.");
+
     // Sync models in correct dependency order
     // Country must be synced first (no dependencies)
-    await Country.sync({ force: true });
+    await Country.sync({ force: false });
     console.log("Country model synchronized.");
 
     // Tag can be synced next (no dependencies)
-    await Tag.sync({ force: true });
+    await Tag.sync({ force: false });
     console.log("Tag model synchronized.");
 
     // User depends on Country
-    await User.sync({ force: true });
+    await User.sync({ force: false });
     console.log("User model synchronized.");
 
     // Location can be synced (country_code is just a string, not FK)
-    await Location.sync({ force: true });
+    await Location.sync({ force: false });
     console.log("Location model synchronized.");
 
     // Now sync association tables (through tables)

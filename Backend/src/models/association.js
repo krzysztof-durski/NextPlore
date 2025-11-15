@@ -8,8 +8,8 @@ User.belongsTo(Country, { foreignKey: "country_id", as: "country" });
 Country.hasMany(User, { foreignKey: "country_id" });
 
 // User and Tag (Many-to-Many)
-User.belongsToMany(Tag, { through: "user_tag", foreignKey: "userId" });
-Tag.belongsToMany(User, { through: "user_tag", foreignKey: "tagId" });
+// User.belongsToMany(Tag, { through: "user_tag", foreignKey: "userId" });
+// Tag.belongsToMany(User, { through: "user_tag", foreignKey: "tagId" });
 
 // Location and Tag (Many-to-Many)
 Location.belongsToMany(Tag, { through: "place_tag", foreignKey: "locationId" });

@@ -131,6 +131,8 @@ const User = sequelize.define(
     updatedAt: "updated_at",
     paranoid: true,
     deletedAt: "deleted_at",
+    tableName: "users",
+    freezeTableName: true,
   }
 );
 

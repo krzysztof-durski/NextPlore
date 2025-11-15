@@ -53,3 +53,34 @@ export const isAuthenticated = () => {
   return !!localStorage.getItem('accessToken')
 }
 
+export const sendVerificationCode = async (email) => {
+  try {
+    const response = await api.post('/users/send-verification-code', {
+      email
+    })
+    return response.data.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to send verification code')
+  }
+}
+
+export const verifyEmailCode = async (email, code) => {
+  try {
+    const response = await api.post('/users/verify-email', {
+      email,
+      code
+    })
+    const { accessToken, refreshToken, ...userData } = response.data.data
+    
+    // Store tokens in localStorage
+    if (accessToken && refreshToken) {
+      localStorage.setItem('accessToken', accessToken)
+      localStorage.setItem('refreshToken', refreshToken)
+    }
+    
+    return { user: userData, accessToken, refreshToken }
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Email verification failed')
+  }
+}
+

@@ -26,11 +26,23 @@ export default function Register() {
     // Fetch countries for dropdown
     const fetchCountries = async () => {
       try {
+        console.log("Fetching countries from:", `${API_BASE_URL}/countries/`);
         const response = await axios.get(`${API_BASE_URL}/countries/`);
-        setCountries(response.data.data || []);
+        console.log("Countries response:", response.data);
+        const countriesData = response.data?.data || response.data || [];
+        console.log("Countries data:", countriesData);
+        setCountries(countriesData);
+        if (countriesData.length === 0) {
+          console.warn("No countries found in response");
+        }
       } catch (err) {
         console.error("Failed to fetch countries:", err);
-        setError("Failed to load countries. Please refresh the page.");
+        console.error("Error details:", err.response?.data || err.message);
+        setError(
+          `Failed to load countries: ${
+            err.response?.data?.message || err.message
+          }. Please refresh the page.`
+        );
       } finally {
         setLoadingCountries(false);
       }
@@ -56,10 +68,10 @@ export default function Register() {
 
     try {
       await register(formData);
-      // Navigate to login page after successful registration
-      navigate("/login", {
+      // Navigate to verify email page after successful registration
+      navigate("/verify-email", {
         state: {
-          message: "Registration successful! Please verify your email to continue.",
+          email: formData.email,
         },
       });
     } catch (err) {
@@ -167,7 +179,9 @@ export default function Register() {
                   <option value="">Select a country</option>
                   {countries.map((country) => (
                     <option key={country.country_id} value={country.country_id}>
-                      {country.country_name}
+                      {country.flag
+                        ? `${country.flag} ${country.country_name}`
+                        : country.country_name}
                     </option>
                   ))}
                 </select>
@@ -209,7 +223,11 @@ export default function Register() {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="register-submit-btn" disabled={loading}>
+          <button
+            type="submit"
+            className="register-submit-btn"
+            disabled={loading}
+          >
             {loading ? "REGISTERING..." : "REGISTER"}
           </button>
 
@@ -224,4 +242,3 @@ export default function Register() {
     </div>
   );
 }
-
