@@ -47,10 +47,11 @@ const getnearbyLocations = asynchandler(async (req, res) => {
     ],
   });
 
+  
   res
     .status(200)
     .json(
-      new ApiResponse(200, "Nearby locations fetched successfully", locations)
+      new ApiResponse(200, locations, "Nearby locations fetched successfully")
     );
 });
 
@@ -103,7 +104,7 @@ const getRecommendLocations = asynchandler(async (req, res) => {
       ),
       true
     ),
-    group: ["Location.location_id"], // Use model name for clarity
+    group: ["location.location_id"], // Use model name for clarity
     having: sequelize.literal(`COUNT(DISTINCT "tags"."tag_id") = ${tagCount}`),
   });
 
@@ -112,8 +113,8 @@ const getRecommendLocations = asynchandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        "Recommended locations fetched successfully",
-        locations
+        locations,
+        "Recommended locations fetched successfully"
       )
     );
 });
@@ -130,7 +131,7 @@ const getPlaceDetails = asynchandler(async (req, res) => {
   res
     .status(200)
     .json(
-      new ApiResponse(200, "Location details fetched successfully", location)
+      new ApiResponse(200, location, "Location details fetched successfully")
     );
 });
 
