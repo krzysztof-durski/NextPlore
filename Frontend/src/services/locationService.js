@@ -20,7 +20,7 @@ api.interceptors.request.use((config) => {
 
 export const getNearbyLocations = async (lat, lon, radius = 2) => {
   try {
-    const response = await api.get('/locations/', {
+    const response = await api.get('/locations', {
       params: { lat, lon, radius }
     })
     return response.data.data

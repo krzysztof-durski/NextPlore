@@ -5,6 +5,7 @@ import userRoutes from "./src/routes/user.route.js";
 import countryRoutes from "./src/routes/country.route.js";
 import locationRoutes from "./src/routes/locations.route.js";
 import tagRoutes from "./src/routes/tag.route.js";
+import homeRoutes from "./src/routes/home.route.js";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.get("/health", (req, res) => {
 });
 
 // Routes
+app.use("/api/home", homeRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/locations", locationRoutes);

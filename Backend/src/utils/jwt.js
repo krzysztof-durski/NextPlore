@@ -24,7 +24,7 @@ const getJWTRefreshSecret = () => {
 
 // Get JWT access token expiration from environment - required for configuration
 const getJWTAccessExpiresIn = () => {
-  const expiresIn = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
+  const expiresIn = process.env.JWT_ACCESS_EXPIRES_IN || "8h";
   return expiresIn;
 };
 
