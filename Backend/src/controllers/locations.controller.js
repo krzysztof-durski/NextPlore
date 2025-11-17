@@ -85,13 +85,14 @@ const getRecommendLocations = asynchandler(async (req, res) => {
   );
   const userGeography = sequelize.cast(userPoint, "GEOGRAPHY");
 
-  const locations = await Location.findAll({
-    attributes: ["location_id", "fsq_place_id", "name", "address", "location"],
+  // Step 1: Find the IDs of locations that match the criteria
+  const locationIdsResult = await Location.findAll({
+    attributes: ["location_id"], // Only fetch the ID for filtering
     include: [
       {
         model: Tag,
         where: { name: { [Op.in]: tagNames } },
-        attributes: ["name", "icon_prefix", "icon_suffix"],
+        attributes: [], // No attributes needed, just the join for counting
         through: { attributes: [] },
       },
     ],
@@ -104,10 +105,48 @@ const getRecommendLocations = asynchandler(async (req, res) => {
       ),
       true
     ),
-    group: ["location.location_id"], // Use model name for clarity
+    group: ["location.location_id"],
     having: sequelize.literal(`COUNT(DISTINCT "tags"."tag_id") = ${tagCount}`),
   });
 
+  const locationIds = locationIdsResult.map((loc) => loc.location_id);
+
+  if (locationIds.length === 0) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          [],
+          "No locations found matching all specified tags."
+        )
+      );
+  }
+
+  // Step 2: Fetch the full details for the matching locations
+
+const locations = await Location.findAll({
+    // --- ADD THIS ATTRIBUTES ARRAY ---
+    attributes: [
+        'location_id',
+        'fsq_place_id',
+        'name',
+        'address',
+        'description',
+        'links',
+        'location', // The all-important coordinate data
+        'country_id'
+    ],
+    // ---
+    where: { location_id: { [Op.in]: locationIds } },
+    include: [
+      {
+        model: Tag,
+        attributes: ["name", "icon_prefix", "icon_suffix"],
+        through: { attributes: [] },
+      },
+    ],
+});
   res
     .status(200)
     .json(
