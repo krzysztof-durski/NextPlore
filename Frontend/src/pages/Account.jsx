@@ -23,6 +23,8 @@ export default function Account() {
   const [success, setSuccess] = useState("");
   const [activeModal, setActiveModal] = useState(null); // 'username', 'fullname', 'password', 'country', 'delete'
   const [codeSent, setCodeSent] = useState(false); // Track if deletion code has been sent
+  const [countrySearch, setCountrySearch] = useState("");
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [formData, setFormData] = useState({
     new_username: "",
     fullname: "",
@@ -79,6 +81,42 @@ export default function Account() {
     }));
     setError("");
     setSuccess("");
+  };
+
+  // Filter countries based on search input
+  const filteredCountries = countrySearch.trim()
+    ? countries.filter((country) =>
+        country.country_name
+          .toLowerCase()
+          .includes(countrySearch.toLowerCase())
+      )
+    : countries;
+
+  // Handle country selection
+  const handleCountrySelect = (countryId, countryName) => {
+    setFormData((prev) => ({
+      ...prev,
+      country_id: countryId,
+    }));
+    setCountrySearch(
+      countries.find((c) => c.country_id === countryId)?.flag
+        ? `${countries.find((c) => c.country_id === countryId).flag} ${countryName}`
+        : countryName
+    );
+    setIsCountryDropdownOpen(false);
+  };
+
+  // Handle country search input change
+  const handleCountrySearchChange = (e) => {
+    setCountrySearch(e.target.value);
+    setIsCountryDropdownOpen(true);
+    // If country is already selected and user starts typing, clear selection
+    if (formData.country_id) {
+      setFormData((prev) => ({
+        ...prev,
+        country_id: "",
+      }));
+    }
   };
 
   const handleChangeUsername = async (e) => {
@@ -186,6 +224,15 @@ export default function Account() {
       return;
     }
 
+    // Validate that a country was actually selected
+    const selectedCountry = countries.find(
+      (c) => c.country_id === parseInt(formData.country_id)
+    );
+    if (!selectedCountry) {
+      setError("Please select a valid country");
+      return;
+    }
+
     try {
       const updatedUser = await changeCountry(formData.country_id);
       setUser(updatedUser);
@@ -245,6 +292,25 @@ export default function Account() {
     if (modalType === "fullname" && user) {
       setFormData((prev) => ({ ...prev, fullname: user.fullname }));
     }
+    if (modalType === "country" && user && countries.length > 0) {
+      // Initialize country search with current country
+      const currentCountry = countries.find(
+        (c) => c.country_id === user.country_id
+      );
+      if (currentCountry) {
+        setCountrySearch(
+          currentCountry.flag
+            ? `${currentCountry.flag} ${currentCountry.country_name}`
+            : currentCountry.country_name
+        );
+      } else {
+        setCountrySearch("");
+      }
+      setIsCountryDropdownOpen(false);
+    } else if (modalType === "country") {
+      setCountrySearch("");
+      setIsCountryDropdownOpen(false);
+    }
     if (modalType === "delete") {
       setCodeSent(false); // Reset code sent state when opening delete modal
     }
@@ -255,6 +321,8 @@ export default function Account() {
     setError("");
     setSuccess("");
     setCodeSent(false);
+    setCountrySearch("");
+    setIsCountryDropdownOpen(false);
     setFormData({
       new_username: "",
       fullname: user?.fullname || "",
@@ -552,22 +620,58 @@ export default function Account() {
             <form onSubmit={handleChangeCountry}>
               <div className="form-group">
                 <label htmlFor="country_id">Select Country</label>
-                <select
-                  id="country_id"
-                  name="country_id"
-                  value={formData.country_id}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Select a country</option>
-                  {countries.map((country) => (
-                    <option key={country.country_id} value={country.country_id}>
-                      {country.flag
-                        ? `${country.flag} ${country.country_name}`
-                        : country.country_name}
-                    </option>
-                  ))}
-                </select>
+                <div className="country-dropdown-container">
+                  <input
+                    type="text"
+                    id="country_id"
+                    name="country_id"
+                    value={countrySearch}
+                    onChange={handleCountrySearchChange}
+                    onFocus={() => setIsCountryDropdownOpen(true)}
+                    onBlur={() => {
+                      // Delay closing to allow click on dropdown items
+                      setTimeout(() => setIsCountryDropdownOpen(false), 200);
+                    }}
+                    placeholder="Type to search countries..."
+                    className="country-search-input"
+                    required
+                    autoComplete="off"
+                  />
+                  {isCountryDropdownOpen && (
+                    <div
+                      className="country-dropdown-list"
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      {filteredCountries.length > 0 ? (
+                        filteredCountries.map((country) => (
+                          <div
+                            key={country.country_id}
+                            className={`country-dropdown-item ${
+                              formData.country_id === country.country_id.toString()
+                                ? "selected"
+                                : ""
+                            }`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              handleCountrySelect(
+                                country.country_id,
+                                country.country_name
+                              );
+                            }}
+                          >
+                            {country.flag
+                              ? `${country.flag} ${country.country_name}`
+                              : country.country_name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="country-dropdown-item no-results">
+                          No countries found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}

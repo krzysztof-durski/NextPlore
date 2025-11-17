@@ -21,6 +21,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [loadingCountries, setLoadingCountries] = useState(true);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
 
   useEffect(() => {
     // Fetch countries for dropdown
@@ -61,10 +63,81 @@ export default function Register() {
     if (error) setError("");
   };
 
+  // Filter countries based on search input
+  const filteredCountries = countrySearch.trim()
+    ? countries.filter((country) =>
+        country.country_name
+          .toLowerCase()
+          .includes(countrySearch.toLowerCase())
+      )
+    : countries;
+
+  // Handle country selection
+  const handleCountrySelect = (countryId, countryName) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: countryId,
+    }));
+    setCountrySearch(
+      countries.find((c) => c.country_id === countryId)?.flag
+        ? `${countries.find((c) => c.country_id === countryId).flag} ${countryName}`
+        : countryName
+    );
+    setIsCountryDropdownOpen(false);
+  };
+
+  // Handle country search input change
+  const handleCountrySearchChange = (e) => {
+    setCountrySearch(e.target.value);
+    setIsCountryDropdownOpen(true);
+    // If country is already selected and user starts typing, clear selection
+    if (formData.country) {
+      setFormData((prev) => ({
+        ...prev,
+        country: "",
+      }));
+    }
+  };
+
+  // Get selected country display text
+  const getSelectedCountryText = () => {
+    if (!formData.country) return "";
+    const selectedCountry = countries.find(
+      (c) => c.country_id === parseInt(formData.country)
+    );
+    if (!selectedCountry) return "";
+    return selectedCountry.flag
+      ? `${selectedCountry.flag} ${selectedCountry.country_name}`
+      : selectedCountry.country_name;
+  };
+
+  // Initialize country search when country is selected from outside
+  useEffect(() => {
+    if (formData.country && !countrySearch && countries.length > 0) {
+      const selectedCountry = countries.find(
+        (c) => c.country_id === parseInt(formData.country)
+      );
+      if (selectedCountry) {
+        setCountrySearch(
+          selectedCountry.flag
+            ? `${selectedCountry.flag} ${selectedCountry.country_name}`
+            : selectedCountry.country_name
+        );
+      }
+    }
+  }, [formData.country, countries]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    // Validate country is selected
+    if (!formData.country) {
+      setError("Please select a country");
+      setLoading(false);
+      return;
+    }
 
     try {
       await register(formData);
@@ -169,24 +242,59 @@ export default function Register() {
                 <label htmlFor="country" className="form-label">
                   country
                 </label>
-                <select
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="form-select"
-                  required
-                  disabled={loading || loadingCountries}
-                >
-                  <option value="">Select a country</option>
-                  {countries.map((country) => (
-                    <option key={country.country_id} value={country.country_id}>
-                      {country.flag
-                        ? `${country.flag} ${country.country_name}`
-                        : country.country_name}
-                    </option>
-                  ))}
-                </select>
+                <div className="country-dropdown-container">
+                  <input
+                    type="text"
+                    id="country"
+                    name="country"
+                    value={countrySearch}
+                    onChange={handleCountrySearchChange}
+                    onFocus={() => setIsCountryDropdownOpen(true)}
+                    onBlur={() => {
+                      // Delay closing to allow click on dropdown items
+                      setTimeout(() => setIsCountryDropdownOpen(false), 200);
+                    }}
+                    placeholder="Type to search countries..."
+                    className="form-select country-search-input"
+                    required
+                    disabled={loading || loadingCountries}
+                    autoComplete="off"
+                  />
+                  {isCountryDropdownOpen && !loadingCountries && (
+                    <div
+                      className="country-dropdown-list"
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      {filteredCountries.length > 0 ? (
+                        filteredCountries.map((country) => (
+                          <div
+                            key={country.country_id}
+                            className={`country-dropdown-item ${
+                              formData.country === country.country_id.toString()
+                                ? "selected"
+                                : ""
+                            }`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              handleCountrySelect(
+                                country.country_id,
+                                country.country_name
+                              );
+                            }}
+                          >
+                            {country.flag
+                              ? `${country.flag} ${country.country_name}`
+                              : country.country_name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="country-dropdown-item no-results">
+                          No countries found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="form-group">
