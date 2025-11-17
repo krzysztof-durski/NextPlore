@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MapComponent from "../components/Map";
 import { getNearbyLocations } from "../services/locationService";
@@ -12,6 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const locationCardRefs = useRef({});
 
   useEffect(() => {
     // Check if we have filtered locations from navigation state
@@ -93,7 +94,24 @@ export default function Home() {
 
   const handleLocationClick = (location) => {
     setSelectedLocation(location);
+    // Scroll to the selected location card in the sidebar
+    if (locationCardRefs.current[location.location_id]) {
+      locationCardRefs.current[location.location_id].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
   };
+
+  // Effect to scroll to selected location when it changes
+  useEffect(() => {
+    if (selectedLocation && locationCardRefs.current[selectedLocation.location_id]) {
+      locationCardRefs.current[selectedLocation.location_id].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [selectedLocation]);
 
   const handleLocationCardClick = (locationId) => {
     navigate(`/location/${locationId}`);
@@ -149,6 +167,7 @@ export default function Home() {
             locations.map((location) => (
               <div
                 key={location.location_id}
+                ref={(el) => (locationCardRefs.current[location.location_id] = el)}
                 className={`location-card ${
                   selectedLocation?.location_id === location.location_id
                     ? "selected"

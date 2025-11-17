@@ -107,9 +107,11 @@
 }
 
 .location-card.selected {
-  background: #333;
+  background: #2a3a4a;
   border-color: #00aaff;
-  box-shadow: 0 0 15px rgba(0, 170, 255, 0.2);
+  border-width: 2px;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.4), 0 4px 12px rgba(0, 170, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .location-name {
