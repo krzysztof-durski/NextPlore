@@ -59,11 +59,12 @@ export default function FilterPage() {
         distance
       );
 
-      // Navigate back to home with filtered results
+      // Navigate back to home with filtered results and user location
       navigate("/", {
         state: {
           filteredLocations: data,
           filterApplied: true,
+          userLocation: userLocation, // Pass userLocation so map can render
         },
       });
     } catch (error) {

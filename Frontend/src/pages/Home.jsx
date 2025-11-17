@@ -21,6 +21,10 @@ export default function Home() {
         ? location.state.filteredLocations
         : [];
       setLocations(filtered);
+      // Set userLocation if provided in state (from filter page)
+      if (location.state?.userLocation) {
+        setUserLocation(location.state.userLocation);
+      }
       setLoading(false);
       // Clear the state to prevent reusing on refresh
       window.history.replaceState({}, document.title);

@@ -85,14 +85,19 @@ const getRecommendLocations = asynchandler(async (req, res) => {
   );
   const userGeography = sequelize.cast(userPoint, "GEOGRAPHY");
 
-  const locations = await Location.findAll({
-    attributes: ["location_id", "fsq_place_id", "name", "address", "location"],
+  // Step 1: Find location IDs that have all the required tags within the radius
+  const matchingLocationIds = await Location.findAll({
+    attributes: [
+      "location_id",
+      [sequelize.fn("COUNT", sequelize.fn("DISTINCT", sequelize.col("tags.tag_id"))), "tag_count"],
+    ],
     include: [
       {
         model: Tag,
         where: { name: { [Op.in]: tagNames } },
-        attributes: ["name", "icon_prefix", "icon_suffix"],
+        attributes: [],
         through: { attributes: [] },
+        required: true,
       },
     ],
     where: sequelize.where(
@@ -104,8 +109,36 @@ const getRecommendLocations = asynchandler(async (req, res) => {
       ),
       true
     ),
-    group: ["location.location_id"], // Use model name for clarity
+    group: ["location.location_id"],
     having: sequelize.literal(`COUNT(DISTINCT "tags"."tag_id") = ${tagCount}`),
+    raw: true,
+  });
+
+  // Extract location IDs
+  const locationIds = matchingLocationIds.map((loc) => loc.location_id);
+
+  if (locationIds.length === 0) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, [], "No locations found matching all selected tags")
+      );
+  }
+
+  // Step 2: Fetch the full location data with tags
+  // Note: We don't need to re-apply the distance filter since locationIds already filtered by distance
+  const locations = await Location.findAll({
+    attributes: ["location_id", "fsq_place_id", "name", "address", "location", "description", "links"],
+    include: [
+      {
+        model: Tag,
+        attributes: ["name", "icon_prefix", "icon_suffix"],
+        through: { attributes: [] },
+      },
+    ],
+    where: {
+      location_id: { [Op.in]: locationIds },
+    },
   });
 
   res

@@ -90,13 +90,18 @@ export default function MapComponent({
         const isSelected =
           selectedLocation?.location_id === location.location_id;
 
+        // Get icon from first tag if available
+        const firstTag = location.tags && location.tags.length > 0 ? location.tags[0] : null;
+        const iconPrefix = firstTag?.icon_prefix || null;
+        const iconSuffix = firstTag?.icon_suffix || null;
+
         return (
           <Marker
             key={location.location_id}
             position={[lat, lon]}
             icon={createCustomIcon(
-              location.icon_prefix,
-              location.icon_suffix,
+              iconPrefix,
+              iconSuffix,
               isSelected
             )}
             eventHandlers={{

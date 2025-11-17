@@ -109,17 +109,24 @@ export default function LocationDetails() {
         <div className="details-grid">
           {/* Left: Image/Map Placeholder */}
           <div className="image-container">
-            {location.icon_prefix && location.icon_suffix ? (
-              <img
-                src={`${location.icon_prefix}bg_512${location.icon_suffix}`}
-                alt={location.name}
-                className="location-icon"
-              />
-            ) : (
-              <div className="placeholder-image">
-                <span className="placeholder-text">📍</span>
-              </div>
-            )}
+            {(() => {
+              // Get icon from first tag if available
+              const firstTag = location.tags && location.tags.length > 0 ? location.tags[0] : null;
+              const iconPrefix = firstTag?.icon_prefix;
+              const iconSuffix = firstTag?.icon_suffix;
+              
+              return iconPrefix && iconSuffix ? (
+                <img
+                  src={`${iconPrefix}bg_512${iconSuffix}`}
+                  alt={location.name}
+                  className="location-icon"
+                />
+              ) : (
+                <div className="placeholder-image">
+                  <span className="placeholder-text">📍</span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Right: Info Container */}
