@@ -53,7 +53,24 @@ const Location = sequelize.define(
     deletedAt: "deleted_at",
     tableName: "locations",
     freezeTableName: true,
+
+
+    indexes: [
+          // 1. The Geospatial Index 
+          {
+            fields: ["location"],
+            using: "GIST", // 'GIST' is required for spatial/geometry data
+            name: "location_position_idx",
+          },
+          // 2. Foreign Key Index (Good practice for performance)
+          // This speeds up queries like: "Find all locations in Country X"
+          {
+            fields: ["country_id"],
+            using: "BTREE", // Standard index for numbers/text
+            name: "location_country_idx",
+          },
+        ],
   }
 );
-
+ 
 export default Location;
