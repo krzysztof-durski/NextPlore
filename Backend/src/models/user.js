@@ -92,7 +92,7 @@ const User = sequelize.define(
       defaultValue: false,
     },
     password_reset_token: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(6),
       allowNull: true,
     },
     password_reset_expires: {
@@ -133,28 +133,46 @@ const User = sequelize.define(
     deletedAt: "deleted_at",
     tableName: "users",
     freezeTableName: true,
+    indexes: [
+      {
+        fields: ["country_id"],
+      },
+      {
+        fields: ["is_active"],
+      },
+      {
+        fields: ["is_verified"],
+      },
+      {
+        fields: ["deleted_at"],
+      },
+      {
+        fields: ["is_active", "is_verified"],
+        name: "users_is_active_is_verified_idx",
+      },
+    ],
   }
 );
 
-// Instance method to hash password
+// to hash password
 User.prototype.hashPassword = async function (password) {
   const saltRounds = 12;
   return await bcrypt.hash(password, saltRounds);
 };
 
-// Instance method to compare password
+// to compare password
 User.prototype.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Hook to hash password before creating user
+// to hash password before creating user
 User.beforeCreate(async (user) => {
   if (user.password) {
     user.password = await bcrypt.hash(user.password, 12);
   }
 });
 
-// Hook to hash password before updating user (only if password is being updated)
+// to hash password before updating user (only if password is being updated)
 User.beforeUpdate(async (user) => {
   if (user.changed("password")) {
     user.password = await bcrypt.hash(user.password, 12);

@@ -26,7 +26,6 @@ const registerUser = asynchandler(async (req, res) => {
     repeat_password,
   } = req.body;
 
-  // Validate required fields
   if (
     !fullname ||
     !username ||
@@ -39,34 +38,28 @@ const registerUser = asynchandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  // Validate password match
   if (password !== repeat_password) {
     throw new ApiError(400, "Passwords do not match");
   }
 
-  // Check if user with email already exists (excluding soft-deleted users)
-  // This allows re-registration with emails from deleted accounts
-  const existingUser = await User.findOne({ 
+  const existingUser = await User.findOne({
     where: { email },
-    paranoid: true // Only check non-deleted users
+    paranoid: true,
   });
   if (existingUser) {
     throw new ApiError(409, "User with this email already exists");
   }
-  
-  // Check if there's a soft-deleted user with this email
-  // If so, permanently delete it to allow re-registration with the same email
-  const deletedUser = await User.findOne({ 
+
+  // check for soft-deleted user with this email and if there is, permanently delete it
+  const deletedUser = await User.findOne({
     where: { email },
-    paranoid: false // Include soft-deleted users
+    paranoid: false,
   });
-  
+
   if (deletedUser) {
-    // Permanently delete the soft-deleted user to free up the email
     await deletedUser.destroy({ force: true });
   }
 
-  // Validate country_id exists (country is selected from dropdown)
   const countryId = parseInt(country, 10);
   if (isNaN(countryId)) {
     throw new ApiError(400, "Invalid country ID");
@@ -77,7 +70,6 @@ const registerUser = asynchandler(async (req, res) => {
     throw new ApiError(404, "Country not found");
   }
 
-  // Calculate if user is adult (18 years or older)
   const birthDate = new Date(date_of_birth);
 
   const today = new Date();
@@ -85,24 +77,21 @@ const registerUser = asynchandler(async (req, res) => {
   const monthDiff = today.getMonth() - birthDate.getMonth();
   const dayDiff = today.getDate() - birthDate.getDate();
 
-  // Adjust age if birthday hasn't occurred this year yet
+  // if birthday not occurred this year yet, adjust age
   const isAdult =
     age > 18 ||
     (age === 18 && (monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0)));
 
-  // Create user
   const user = await User.create({
     fullname,
     username,
     email,
     date_of_birth,
     country_id: countryId,
-    password, // Password will be hashed automatically by the beforeCreate hook
+    password, // hashed automatically
     is_adult: isAdult,
   });
 
-  // Return success response (exclude password from response)
-  // Note!!!: Tokens are NOT generated here - they will be generated after email verification
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -129,29 +118,24 @@ const registerUser = asynchandler(async (req, res) => {
 const loginUser = asynchandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate required fields
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
   }
 
-  // Find user by email
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new ApiError(401, "Invalid email or password");
   }
 
-  // Check if user is active
   if (!user.is_active) {
     throw new ApiError(403, "Account is deactivated. Please contact support.");
   }
 
-  // Verify password
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid email or password");
   }
 
-  // Check if user email is verified
   if (!user.is_verified) {
     throw new ApiError(
       403,
@@ -159,14 +143,11 @@ const loginUser = asynchandler(async (req, res) => {
     );
   }
 
-  // Generate JWT access and refresh tokens (only for verified users)
   const accessToken = generateAccessToken(user.user_id);
   const refreshToken = generateRefreshToken(user.user_id);
 
-  // Store refresh token in database
   await user.update({ refresh_token: refreshToken });
 
-  // Return user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -189,36 +170,30 @@ const loginUser = asynchandler(async (req, res) => {
 const sendVerificationEmailCode = asynchandler(async (req, res) => {
   const { email } = req.body;
 
-  // Validate email is provided
   if (!email) {
     throw new ApiError(400, "Email is required");
   }
 
-  // Find user by email
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  // Check if user is already verified
   if (user.is_verified) {
     throw new ApiError(400, "Email is already verified");
   }
 
-  // Generate 6-digit verification code
   const verificationCode = crypto.randomInt(100000, 1000000).toString();
 
-  // Set expiration time (10 minutes from now)
+  // set expiration time (10 min)
   const verificationCodeExpires = new Date();
   verificationCodeExpires.setMinutes(verificationCodeExpires.getMinutes() + 10);
 
-  // Save verification code and expiration to user
   await user.update({
     verification_code: verificationCode,
     verification_code_expires: verificationCodeExpires,
   });
 
-  // Send verification email
   try {
     await sendVerificationEmail(email, verificationCode);
   } catch (error) {
@@ -239,23 +214,19 @@ const sendVerificationEmailCode = asynchandler(async (req, res) => {
 const verifyEmailCode = asynchandler(async (req, res) => {
   const { email, code } = req.body;
 
-  // Validate required fields
   if (!email || !code) {
     throw new ApiError(400, "Email and verification code are required");
   }
 
-  // Find user by email
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  // Check if user is already verified
   if (user.is_verified) {
     throw new ApiError(400, "Email is already verified");
   }
 
-  // Check if verification code exists
   if (!user.verification_code) {
     throw new ApiError(
       400,
@@ -263,7 +234,6 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     );
   }
 
-  // Check if verification code has expired
   if (new Date() > new Date(user.verification_code_expires)) {
     throw new ApiError(
       400,
@@ -271,7 +241,6 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     );
   }
 
-  // Verify the code
   if (
     !crypto.timingSafeEqual(
       Buffer.from(user.verification_code),
@@ -281,21 +250,18 @@ const verifyEmailCode = asynchandler(async (req, res) => {
     throw new ApiError(400, "Invalid verification code");
   }
 
-  // Update user to verified and clear verification code
   await user.update({
     is_verified: true,
     verification_code: null,
     verification_code_expires: null,
   });
 
-  // Generate JWT access and refresh tokens to automatically log user in after verification
+  // generate JWT access and refresh tokens to log user in after verification
   const accessToken = generateAccessToken(user.user_id);
   const refreshToken = generateRefreshToken(user.user_id);
 
-  // Store refresh token in database
   await user.update({ refresh_token: refreshToken });
 
-  // Return user data with tokens (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -317,16 +283,13 @@ const verifyEmailCode = asynchandler(async (req, res) => {
 const requestPasswordReset = asynchandler(async (req, res) => {
   const { email } = req.body;
 
-  // Validate email is provided
   if (!email) {
     throw new ApiError(400, "Email is required");
   }
 
-  // Find user by email
+  // find user by email, don't reveal if account exists but is deactivated
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    // For security, don't reveal if email exists or not
-    // Return success message even if user doesn't exist
     return res
       .status(200)
       .json(
@@ -338,9 +301,8 @@ const requestPasswordReset = asynchandler(async (req, res) => {
       );
   }
 
-  // Check if user is active
+  // check if user is active, don't reveal if account exists but is deactivated
   if (!user.is_active) {
-    // For security, don't reveal that account exists but is deactivated
     return res
       .status(200)
       .json(
@@ -352,20 +314,17 @@ const requestPasswordReset = asynchandler(async (req, res) => {
       );
   }
 
-  // Generate 6-digit reset code
   const resetCode = crypto.randomInt(100000, 1000000).toString();
 
-  // Set expiration time (10 minutes from now)
+  // set expiration (10 min)
   const resetCodeExpires = new Date();
   resetCodeExpires.setMinutes(resetCodeExpires.getMinutes() + 10);
 
-  // Save reset code and expiration to user
   await user.update({
     password_reset_token: resetCode,
     password_reset_expires: resetCodeExpires,
   });
 
-  // Send password reset email
   try {
     await sendPasswordResetCode(email, resetCode);
   } catch (error) {
@@ -386,7 +345,6 @@ const requestPasswordReset = asynchandler(async (req, res) => {
 const resetPassword = asynchandler(async (req, res) => {
   const { email, code, new_password, repeat_new_password } = req.body;
 
-  // Validate required fields
   if (!email || !code || !new_password || !repeat_new_password) {
     throw new ApiError(
       400,
@@ -394,18 +352,15 @@ const resetPassword = asynchandler(async (req, res) => {
     );
   }
 
-  // Validate password match
   if (new_password !== repeat_new_password) {
     throw new ApiError(400, "Passwords do not match");
   }
 
-  // Find user by email
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  // Check if reset code exists
   if (!user.password_reset_token) {
     throw new ApiError(
       400,
@@ -413,12 +368,11 @@ const resetPassword = asynchandler(async (req, res) => {
     );
   }
 
-  // Check if reset code has expired
   if (new Date() > new Date(user.password_reset_expires)) {
     throw new ApiError(400, "Password reset code has expired");
   }
 
-  // Verify the code using timing-safe comparison
+  // verify the code using timing-safe comparison
   if (!user.password_reset_token || !code) {
     throw new ApiError(400, "Invalid password reset code");
   }
@@ -426,14 +380,14 @@ const resetPassword = asynchandler(async (req, res) => {
   const storedTokenBuffer = Buffer.from(user.password_reset_token, "utf8");
   const providedCodeBuffer = Buffer.from(code, "utf8");
 
-  // Ensure both buffers are the same length to avoid leaking length information
+  // ensure both buffers are the same length to avoid leaking length information
   const maxLength = Math.max(
     storedTokenBuffer.length,
     providedCodeBuffer.length
   );
   const zeroedBuffer = Buffer.alloc(maxLength, 0);
 
-  // Pad both buffers to the same length for timing-safe comparison
+  // pad both buffers to the same length for timing-safe comparison
   const paddedStoredToken = Buffer.concat([
     storedTokenBuffer,
     zeroedBuffer.slice(storedTokenBuffer.length),
@@ -443,25 +397,24 @@ const resetPassword = asynchandler(async (req, res) => {
     zeroedBuffer.slice(providedCodeBuffer.length),
   ]);
 
-  // Perform timing-safe comparison
+  // perform timing-safe comparison
   if (!crypto.timingSafeEqual(paddedStoredToken, paddedProvidedCode)) {
     throw new ApiError(400, "Invalid password reset code");
   }
 
-  // Clear reset tokens immediately after successful validation to prevent reuse
-  // Also clear refresh token for security (user needs to login again)
+  // clear reset tokens immediately after successful validation to prevent reuse
+  // also clear refresh token for security (user needs to login again)
   await user.update({
     password_reset_token: null,
     password_reset_expires: null,
     refresh_token: null,
   });
 
-  // Update password (tokens already cleared above)
   await user.update({
-    password: new_password, // Password will be hashed automatically by the beforeUpdate hook
+    password: new_password, // password will be hashed automatically by the beforeUpdate hook
   });
 
-  // Return success message without token - user needs to login manually
+  // return success message without token - user needs to login manually
   return res
     .status(200)
     .json(
@@ -476,36 +429,30 @@ const resetPassword = asynchandler(async (req, res) => {
 const resendPasswordResetCode = asynchandler(async (req, res) => {
   const { email } = req.body;
 
-  // Validate email is provided
   if (!email) {
     throw new ApiError(400, "Email is required");
   }
 
-  // Find user by email
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  // Check if user is active
   if (!user.is_active) {
     throw new ApiError(403, "Account is deactivated. Please contact support.");
   }
 
-  // Generate new 6-digit reset code
   const resetCode = crypto.randomInt(100000, 1000000).toString();
 
-  // Set expiration time (10 minutes from now)
+  // set expiration time (10 minutes from now)
   const resetCodeExpires = new Date();
   resetCodeExpires.setMinutes(resetCodeExpires.getMinutes() + 10);
 
-  // Save reset code and expiration to user
   await user.update({
     password_reset_token: resetCode,
     password_reset_expires: resetCodeExpires,
   });
 
-  // Send password reset email
   try {
     await sendPasswordResetCode(email, resetCode);
   } catch (error) {
@@ -524,12 +471,10 @@ const resendPasswordResetCode = asynchandler(async (req, res) => {
 });
 
 const changePassword = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
   const { old_password, new_password, repeat_new_password } = req.body;
 
-  // Validate required fields
   if (!old_password || !new_password || !repeat_new_password) {
     throw new ApiError(
       400,
@@ -537,12 +482,10 @@ const changePassword = asynchandler(async (req, res) => {
     );
   }
 
-  // Validate password match
   if (new_password !== repeat_new_password) {
     throw new ApiError(400, "New passwords do not match");
   }
 
-  // Validate that new password is different from old password
   if (old_password === new_password) {
     throw new ApiError(
       400,
@@ -550,13 +493,12 @@ const changePassword = asynchandler(async (req, res) => {
     );
   }
 
-  // Verify old password
   const isOldPasswordValid = await user.comparePassword(old_password);
   if (!isOldPasswordValid) {
     throw new ApiError(401, "Invalid old password");
   }
 
-  // Update password (password will be hashed automatically by the beforeUpdate hook)
+  // update password (password will be hashed automatically by the beforeUpdate hook)
   await user.update({
     password: new_password,
   });
@@ -573,13 +515,10 @@ const changePassword = asynchandler(async (req, res) => {
 });
 
 const getCurrentUser = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
-  // Load country information
   await user.reload({ include: [{ model: Country, as: "country" }] });
 
-  // Return user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -601,17 +540,14 @@ const getCurrentUser = asynchandler(async (req, res) => {
 });
 
 const changeUsername = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
   const { new_username, password } = req.body;
 
-  // Validate required fields
   if (!new_username || !password) {
     throw new ApiError(400, "New username and password are required");
   }
 
-  // Validate username length (matching model constraint)
   if (new_username.length > 32) {
     throw new ApiError(400, "Username must be 32 characters or less");
   }
@@ -620,7 +556,6 @@ const changeUsername = asynchandler(async (req, res) => {
     throw new ApiError(400, "Username cannot be empty");
   }
 
-  // Check if new username is different from current username
   if (user.username === new_username.trim()) {
     throw new ApiError(
       400,
@@ -628,21 +563,18 @@ const changeUsername = asynchandler(async (req, res) => {
     );
   }
 
-  // Verify password
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid password");
   }
 
-  // Update username
   await user.update({
     username: new_username.trim(),
   });
 
-  // Reload user with country information
+  // reload user with country association for response
   await user.reload({ include: [{ model: Country, as: "country" }] });
 
-  // Return updated user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -662,17 +594,14 @@ const changeUsername = asynchandler(async (req, res) => {
 });
 
 const changeFullname = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
   const { fullname, password } = req.body;
 
-  // Validate required fields
   if (!fullname || !password) {
     throw new ApiError(400, "Fullname and password are required");
   }
 
-  // Validate fullname length (matching model constraint)
   if (fullname.length > 255) {
     throw new ApiError(400, "Fullname must be 255 characters or less");
   }
@@ -681,7 +610,6 @@ const changeFullname = asynchandler(async (req, res) => {
     throw new ApiError(400, "Fullname cannot be empty");
   }
 
-  // Check if new fullname is different from current fullname
   if (user.fullname === fullname.trim()) {
     throw new ApiError(
       400,
@@ -689,21 +617,17 @@ const changeFullname = asynchandler(async (req, res) => {
     );
   }
 
-  // Verify password
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid password");
   }
 
-  // Update fullname
   await user.update({
     fullname: fullname.trim(),
   });
 
-  // Reload user with country information
   await user.reload({ include: [{ model: Country, as: "country" }] });
 
-  // Return updated user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -723,23 +647,19 @@ const changeFullname = asynchandler(async (req, res) => {
 });
 
 const changeCountry = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
   const { country_id } = req.body;
 
-  // Validate required fields
   if (!country_id) {
     throw new ApiError(400, "Country ID is required");
   }
 
-  // Validate country_id is a valid integer
   const newCountryId = parseInt(country_id, 10);
   if (isNaN(newCountryId)) {
     throw new ApiError(400, "Invalid country ID");
   }
 
-  // Check if new country is different from current country
   if (user.country_id === newCountryId) {
     throw new ApiError(
       400,
@@ -747,21 +667,17 @@ const changeCountry = asynchandler(async (req, res) => {
     );
   }
 
-  // Validate country exists
   const countryRecord = await Country.findByPk(newCountryId);
   if (!countryRecord) {
     throw new ApiError(404, "Country not found");
   }
 
-  // Update country_id
   await user.update({
     country_id: newCountryId,
   });
 
-  // Reload user with country information
   await user.reload({ include: [{ model: Country, as: "country" }] });
 
-  // Return updated user data (exclude password)
   const userResponse = {
     user_id: user.user_id,
     fullname: user.fullname,
@@ -781,10 +697,8 @@ const changeCountry = asynchandler(async (req, res) => {
 });
 
 const logoutUser = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
-  // Clear refresh token from database
   await user.update({ refresh_token: null });
 
   return res
@@ -795,22 +709,18 @@ const logoutUser = asynchandler(async (req, res) => {
 const refreshToken = asynchandler(async (req, res) => {
   const { refreshToken } = req.body;
 
-  // Validate refresh token is provided
   if (!refreshToken) {
     throw new ApiError(400, "Refresh token is required");
   }
 
   try {
-    // Verify refresh token
     const decoded = verifyRefreshToken(refreshToken);
 
-    // Find user by userId from token
     const user = await User.findByPk(decoded.userId);
     if (!user) {
       throw new ApiError(401, "User not found");
     }
 
-    // Check if user is active
     if (!user.is_active) {
       throw new ApiError(
         403,
@@ -818,7 +728,6 @@ const refreshToken = asynchandler(async (req, res) => {
       );
     }
 
-    // Check if user email is verified
     if (!user.is_verified) {
       throw new ApiError(
         403,
@@ -826,19 +735,15 @@ const refreshToken = asynchandler(async (req, res) => {
       );
     }
 
-    // Verify that the refresh token matches the one stored in database
     if (user.refresh_token !== refreshToken) {
       throw new ApiError(401, "Invalid refresh token");
     }
 
-    // Generate new access and refresh tokens
     const newAccessToken = generateAccessToken(user.user_id);
     const newRefreshToken = generateRefreshToken(user.user_id);
 
-    // Update refresh token in database
     await user.update({ refresh_token: newRefreshToken });
 
-    // Return new tokens
     return res.status(200).json(
       new ApiResponse(
         200,
@@ -857,33 +762,28 @@ const refreshToken = asynchandler(async (req, res) => {
   }
 });
 
-// Account Deletion Controllers
+// account deletion controllers
 
 const sendAccountDeletionVerificationCode = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
-  // Check if user is active
   if (!user.is_active) {
     throw new ApiError(403, "Account is deactivated. Please contact support.");
   }
 
-  // Generate 6-digit deletion verification code
   const deletionCode = crypto.randomInt(100000, 1000000).toString();
 
-  // Set expiration time (10 minutes from now)
+  // set expiration time (10 minutes from now)
   const deletionCodeExpires = new Date();
   deletionCodeExpires.setMinutes(deletionCodeExpires.getMinutes() + 10);
 
-  // Save deletion code and expiration to user
-  // Reset verification flag when requesting a new code
+  // reset verification flag when requesting a new code
   await user.update({
     account_deletion_code: deletionCode,
     account_deletion_code_expires: deletionCodeExpires,
     account_deletion_verified: false,
   });
 
-  // Send account deletion verification email
   try {
     await sendAccountDeletionCode(user.email, deletionCode);
   } catch (error) {
@@ -905,17 +805,14 @@ const sendAccountDeletionVerificationCode = asynchandler(async (req, res) => {
 });
 
 const verifyAccountDeletionCode = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
   const { code } = req.body;
 
-  // Validate required fields
   if (!code) {
     throw new ApiError(400, "Verification code is required");
   }
 
-  // Check if deletion code exists
   if (!user.account_deletion_code) {
     throw new ApiError(
       400,
@@ -923,7 +820,6 @@ const verifyAccountDeletionCode = asynchandler(async (req, res) => {
     );
   }
 
-  // Check if deletion code has expired
   if (new Date() > new Date(user.account_deletion_code_expires)) {
     throw new ApiError(
       400,
@@ -931,7 +827,6 @@ const verifyAccountDeletionCode = asynchandler(async (req, res) => {
     );
   }
 
-  // Verify the code using timing-safe comparison
   if (
     !crypto.timingSafeEqual(
       Buffer.from(user.account_deletion_code),
@@ -941,8 +836,7 @@ const verifyAccountDeletionCode = asynchandler(async (req, res) => {
     throw new ApiError(400, "Invalid account deletion verification code");
   }
 
-  // Code is valid - mark as verified and clear the code
-  // This allows user to proceed to password confirmation
+  // this allows user to proceed to password confirmation
   await user.update({
     account_deletion_code: null,
     account_deletion_code_expires: null,
@@ -961,30 +855,25 @@ const verifyAccountDeletionCode = asynchandler(async (req, res) => {
 });
 
 const resendAccountDeletionCode = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
-  // Check if user is active
   if (!user.is_active) {
     throw new ApiError(403, "Account is deactivated. Please contact support.");
   }
 
-  // Generate new 6-digit deletion verification code
   const deletionCode = crypto.randomInt(100000, 1000000).toString();
 
-  // Set expiration time (10 minutes from now)
+  // set expiration time (10 minutes from now)
   const deletionCodeExpires = new Date();
   deletionCodeExpires.setMinutes(deletionCodeExpires.getMinutes() + 10);
 
-  // Save deletion code and expiration to user
-  // Reset verification flag when requesting a new code
+  // reset verification flag when requesting a new code
   await user.update({
     account_deletion_code: deletionCode,
     account_deletion_code_expires: deletionCodeExpires,
     account_deletion_verified: false,
   });
 
-  // Send account deletion verification email
   try {
     await sendAccountDeletionCode(user.email, deletionCode);
   } catch (error) {
@@ -1006,17 +895,14 @@ const resendAccountDeletionCode = asynchandler(async (req, res) => {
 });
 
 const confirmAccountDeletion = asynchandler(async (req, res) => {
-  // Get user from JWT authentication middleware
   const user = req.user;
 
   const { password } = req.body;
 
-  // Validate required fields
   if (!password) {
     throw new ApiError(400, "Password is required to confirm account deletion");
   }
 
-  // Check if email verification step was completed
   if (!user.account_deletion_verified) {
     throw new ApiError(
       400,
@@ -1024,20 +910,17 @@ const confirmAccountDeletion = asynchandler(async (req, res) => {
     );
   }
 
-  // Verify password
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid password");
   }
 
-  // Password is valid - proceed with account deletion
-  // Clear refresh token and deactivate account before deletion
+  // clear refresh token and deactivate account before deletion
   await user.update({
     is_active: false,
     refresh_token: null,
   });
 
-  // soft delete
   await user.destroy();
 
   return res
