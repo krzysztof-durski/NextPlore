@@ -248,3 +248,17 @@ This project was developed collaboratively. Below is a breakdown of contribution
 ## 📜 License
 
 This project is licensed under the MIT License.
+
+---
+
+## 🤖 AI Usage Note
+
+This project utilized AI assistance for various aspects of development:
+
+- **Code Autocompletion:** AI was used for code autocompletion throughout the development process.
+- **Frontend Development:** The entire frontend was developed with AI assistance.
+- **Data Generation:** AI was used to generate the data used in this project.
+- **Database Scripts:** AI was used to create scripts for populating the database.
+- **Documentation:** This README file was created with AI assistance.
+
+**Important:** All AI-generated content was reviewed, checked, and modified by human developers as necessary to ensure accuracy, quality, and alignment with project requirements.
