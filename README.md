@@ -1,4 +1,4 @@
-# NextPlore - Smart City Explorer
+# NextPlore - Time Saving City Explorer
 
 <p align="center">
   <img src="Documentation/Logo/Logo V1.png" alt="NextPlore Logo" width="250"/>
@@ -220,7 +220,7 @@ This project was developed collaboratively. Below is a breakdown of contribution
 - Country data model
 - Country controllers
 - Country routes
-- Authentication [JWT, emailServices]
+- Authentication [JWT, emailServices] (with AI)
 - Data collection: tagging
 - Wire frames
 
