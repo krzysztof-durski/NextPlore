@@ -260,5 +260,6 @@ This project utilized AI assistance for various aspects of development:
 - **Data Generation:** AI was used to generate the data used in this project.
 - **Database Scripts:** AI was used to create scripts for populating the database.
 - **Documentation:** This README file was created with AI assistance.
+- **Authentication:** AI was used to generate code used for authentication and security related functions (temporary solution)
 
 **Important:** All AI-generated content was reviewed, checked, and modified by human developers as necessary to ensure accuracy, quality, and alignment with project requirements.
