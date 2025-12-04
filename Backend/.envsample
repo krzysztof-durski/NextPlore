@@ -1,6 +1,19 @@
-PG_USER=your_username
-PG_PASSWORD=your_password
-PG_DATABASE=your_database_name
-PG_HOST=
-PG_PORT=
-PORT=
+# PostgreSQL Configuration
+PORT=8000
+PG_HOST=localhost
+PG_USER=your_postgres_username
+PG_PASSWORD=your_postgres_password
+PG_DATABASE=nextplore_db
+PG_PORT=5432
+
+# JWT Configuration
+# IMPORTANT: Generate a strong, random secret key for production
+JWT_ACCESS_SECRET=super_secret_key_123
+JWT_REFRESH_SECRET=super_secret_key_456
+JWT_ACCESS_EXPIRES_IN=8h
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Email Configuration (Gmail)
+EMAIL_USER=your_email@gmail.com
+EMAIL_APP_PASSWORD=your_app_password
+FRONTEND_URL=http://localhost:5173
