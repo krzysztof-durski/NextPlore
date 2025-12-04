@@ -114,7 +114,7 @@ const getRecommendLocations = asynchandler(async (req, res) => {
       ),
       true
     ),
-    group: ["location.location_id"],
+     group: ["location.location_id"], //Here this method might not very scalable, since it is very cpu intesnive, maybe could use a caching or counter caching
     having: sequelize.literal(`COUNT(DISTINCT "tags"."tag_id") = ${tagCount}`),
     raw: true,
   });
