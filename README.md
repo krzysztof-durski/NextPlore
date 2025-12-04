@@ -257,7 +257,7 @@ This project utilized AI assistance for various aspects of development:
 
 - **Code Autocompletion:** AI was used for code autocompletion throughout the development process.
 - **Frontend Development:** The entire frontend was developed with AI assistance.
-- **Data Generation:** AI was used to generate the data used in this project.
+- **Location Tagging:** A Hybrid of AI and Human was used for tagging.
 - **Database Scripts:** AI was used to create scripts for populating the database.
 - **Documentation:** This README file was created with AI assistance.
 - **Authentication:** AI was used to generate code used for authentication and security related functions (temporary solution)
